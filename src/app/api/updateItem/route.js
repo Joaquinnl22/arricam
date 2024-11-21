@@ -1,5 +1,6 @@
 import connectToDatabase from '@/lib/mongodb';
 import mongoose from 'mongoose';
+
 delete mongoose.models.Item;
 
 const ItemSchema = new mongoose.Schema({
@@ -11,23 +12,26 @@ const ItemSchema = new mongoose.Schema({
 });
 
 const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);
+
 export async function PUT(req) {
   try {
     await connectToDatabase();
-    const { tipo, descripcion, estado, nuevoEstado, cantidad } = await req.json();
+    const { tipo, title, descripcion, estado, nuevoEstado, cantidad } = await req.json();
 
     // Asegurarse de que 'cantidad' sea un número
-    const cantidadNumerica = Number(cantidad);  // Convierte a número
+    const cantidadNumerica = Number(cantidad); // Convierte a número
 
-    if (!tipo || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica)) {
+    if (!tipo || !title || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica)) {
       return new Response(
-        JSON.stringify({ message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido." }),
+        JSON.stringify({
+          message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
+        }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     // Encontrar el ítem actual con el estado y descripción originales
-    const currentItem = await Item.findOne({ tipo, descripcion, estado });
+    const currentItem = await Item.findOne({ tipo, title, descripcion, estado });
 
     if (!currentItem) {
       return new Response(
@@ -45,7 +49,7 @@ export async function PUT(req) {
     }
 
     // Actualizar o sumar al nuevo estado
-    const targetItem = await Item.findOne({ tipo, descripcion, estado: nuevoEstado });
+    const targetItem = await Item.findOne({ tipo, title, descripcion, estado: nuevoEstado });
 
     if (targetItem) {
       // Si ya existe un ítem en el nuevo estado, sumamos la cantidad

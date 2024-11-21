@@ -4,6 +4,7 @@ import { FaTrash } from "react-icons/fa";
 const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     tipo: "",
+    title:"",
     descripcion: "",
     estado: "",
     nuevoEstado: "",
@@ -14,6 +15,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     if (item) {
       setFormData({
         tipo: item.tipo,
+        title: item.title,
         descripcion: item.descripcion,
         estado: item.estado,
         nuevoEstado: item.estado, // Default al mismo estado
