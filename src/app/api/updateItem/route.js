@@ -65,7 +65,7 @@ export async function PUT(req) {
         cantidad: cantidadNumerica,
       });
     }
-
+        
     // Reducir la cantidad del estado original
     currentItem.cantidad -= cantidadNumerica;
 
