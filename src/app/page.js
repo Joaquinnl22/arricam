@@ -50,18 +50,21 @@ export default function Home() {
 
   const handleDeleteItem = async (id, cantidad) => {
     try {
-      const response = await fetch(`/api/deleteItem/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/deleteItem`, {
+        method: "PUT",  // Usa PUT en lugar de DELETE
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cantidad }),
+        body: JSON.stringify({ id, cantidad }),  // Envia id y cantidad
       });
+  
       if (!response.ok) throw new Error("Failed to delete item");
+  
       fetchItems(); // Refresca los datos
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
   };
+  
   const filterByState = (items, state) =>
     items.filter((item) => item.estado === state);
 

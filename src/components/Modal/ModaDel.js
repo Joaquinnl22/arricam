@@ -16,7 +16,7 @@ const ModalDel = ({ isOpen, item, onClose, onDelete }) => {
     if (cantidad > item.cantidad) {
       setError(`La cantidad a eliminar excede la disponible (${item.cantidad}).`);
     } else {
-      onDelete(item._id, cantidad);
+      onDelete(item._id, -cantidad);
     }
   };
 
