@@ -1,4 +1,6 @@
-export default function BodegaItem({ bodega, onEdit }) {
+import { FaTrash } from "react-icons/fa";
+
+export default function BodegaItem({ bodega, onEdit, onDelete }) {
   return (
     <div
       className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-300"
@@ -15,6 +17,14 @@ export default function BodegaItem({ bodega, onEdit }) {
         >
           {bodega.estado === 'disponible' ? 'Disponible' : 'Ocupado'}
         </span>
+        {/* Icono de basura */}
+                <FaTrash
+          className="text-red-500 hover:text-red-700 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation(); // Evitar la propagación al contenedor
+            onDelete(bodega); // Abrir el modal de eliminación
+          }}
+        />
       </div>
       <p className="text-gray-600 mb-1">{bodega.descripcion}</p>
       <div className="flex items-center justify-between mt-2">

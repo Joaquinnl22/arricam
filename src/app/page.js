@@ -6,6 +6,7 @@ import BodegaItem from "../components/Bodega/BodegaItem";
 import OficinaItem from "../components/Oficina/OficinaItem";
 import ModalAgregar from "../components/Modal/ModalAdd"; 
 import ModalEditar from "../components/Modal/ModalEdit";
+import ModalDel  from "../components/Modal/ModaDel";
 
 export default function Home() {
   const [baños, setBaños] = useState([]);
@@ -14,6 +15,8 @@ export default function Home() {
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const [isEditarOpen, setIsEditarOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false); 
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const fetchItems = async () => {
     try {
@@ -36,10 +39,29 @@ export default function Home() {
     setEditItem(item);
     setIsEditarOpen(true);
   };
+  const handleOpenDelete = (item) => {
+    setDeleteItem(item);
+    setIsDeleteOpen(true);
+  };
 
   const handleCloseAgregar = () => setIsAgregarOpen(false);
   const handleCloseEditar = () => setIsEditarOpen(false);
+  const handleCloseDelete = () => setIsDeleteOpen(false);
 
+  const handleDeleteItem = async (id, cantidad) => {
+    try {
+      const response = await fetch(`/api/deleteItem/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cantidad }),
+      });
+      if (!response.ok) throw new Error("Failed to delete item");
+      fetchItems(); // Refresca los datos
+      handleCloseDelete();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  };
   const filterByState = (items, state) =>
     items.filter((item) => item.estado === state);
 
@@ -92,6 +114,12 @@ export default function Home() {
           }
         }}
       />
+       <ModalDel
+        isOpen={isDeleteOpen}
+        item={deleteItem}
+        onClose={handleCloseDelete}
+        onDelete={handleDeleteItem} // Pasamos la función para manejar la eliminación
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <section>
@@ -105,7 +133,12 @@ export default function Home() {
               <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filterByState(baños, "disponible").map((baño) => (
-                  <BañoItem key={baño._id} baño={baño} onEdit={handleOpenEditar} />
+                  <BañoItem
+                    key={baño._id}
+                    baño={baño}
+                    onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
+                  />
                 ))}
               </div>
             </div>
@@ -120,6 +153,7 @@ export default function Home() {
                     key={bodega._id}
                     bodega={bodega}
                     onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
                   />
                 ))}
               </div>
@@ -135,6 +169,7 @@ export default function Home() {
                     key={oficina._id}
                     oficina={oficina}
                     onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
                   />
                 ))}
               </div>
@@ -151,7 +186,12 @@ export default function Home() {
               <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filterByState(baños, "ocupado").map((baño) => (
-                  <BañoItem key={baño._id} baño={baño} onEdit={handleOpenEditar} />
+                  <BañoItem
+                    key={baño._id}
+                    baño={baño}
+                    onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
+                  />
                 ))}
               </div>
             </div>
@@ -166,6 +206,7 @@ export default function Home() {
                     key={bodega._id}
                     bodega={bodega}
                     onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
                   />
                 ))}
               </div>
@@ -181,6 +222,7 @@ export default function Home() {
                     key={oficina._id}
                     oficina={oficina}
                     onEdit={handleOpenEditar}
+                    onDelete={handleOpenDelete} 
                   />
                 ))}
               </div>
