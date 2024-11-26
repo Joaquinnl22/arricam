@@ -2,7 +2,7 @@
 
 export default function NavBar({ onAddClick }) {
   return (
-    <nav className="bg-black text-yellow-400 p-4 w-full shadow-lg">
+    <nav className="bg-black mb-5 text-yellow-400 p-4 w-full shadow-lg">
       <div className="container mx-auto flex items-center justify-between">
         {/* Título de la barra de navegación */}
         <h1 className="text-3xl font-bold tracking-wider">
