@@ -29,7 +29,18 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData); // Pasar el formulario al manejador
-    onClose();
+
+    // Limpiar el formulario después de guardar
+    setFormData({
+      tipo: "",
+      title: "",
+      descripcion: "",
+      cantidad: 1,
+      estado: "disponible",
+      imagen: null, // Limpiar la imagen
+    });
+
+    onClose(); // Cerrar el modal
   };
 
   if (!isOpen) return null;
