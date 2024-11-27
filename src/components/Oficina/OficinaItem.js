@@ -6,6 +6,13 @@ export default function OficinaItem({ oficina, onEdit, onDelete }) {
       className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-300"
       onClick={() => onEdit(oficina)}
     >
+      {oficina.imagen && (
+        <img
+          src={oficina.imagen} // URL de la imagen
+          alt={oficina.title} // Texto alternativo con el título
+          className="w-full h-40 object-cover rounded-md mb-4" // Estilo de la imagen
+        />
+      )}
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-bold text-gray-800">{oficina.title}</h3>
         <span

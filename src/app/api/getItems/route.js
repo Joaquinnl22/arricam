@@ -11,7 +11,8 @@ export async function GET(req) {
       title: String,
       descripcion: String,
       estado: String,
-      cantidad: { type: Number, default: 1 }, // Aquí añadimos el campo cantidad
+      cantidad: { type: Number, default: 1 },
+      imagen: { type: String, required: false },
     });
 
     const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);

@@ -8,7 +8,8 @@ const ItemSchema = new mongoose.Schema({
   title: String,
   descripcion: String,
   estado: String,
-  cantidad: { type: Number, default: 1 }, // Aquí añadimos el campo cantidad
+  cantidad: { type: Number, default: 1 },
+  imagen: { type: String, required: false },
 });
 
 const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);
@@ -16,12 +17,12 @@ const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);
 export async function PUT(req) {
   try {
     await connectToDatabase();
-    const { tipo, title, descripcion, estado, nuevoEstado, cantidad } = await req.json();
+    const { tipo, title, descripcion, estado, nuevoEstado, cantidad,imagen } = await req.json();
 
     // Asegurarse de que 'cantidad' sea un número
     const cantidadNumerica = Number(cantidad); // Convierte a número
 
-    if (!tipo || !title || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica)) {
+    if (!tipo || !title || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica) || !imagen) {
       return new Response(
         JSON.stringify({
           message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
@@ -31,7 +32,7 @@ export async function PUT(req) {
     }
 
     // Encontrar el ítem actual con el estado y descripción originales
-    const currentItem = await Item.findOne({ tipo, title, descripcion, estado });
+    const currentItem = await Item.findOne({ tipo, title, descripcion, estado,imagen });
 
     if (!currentItem) {
       return new Response(
@@ -49,7 +50,7 @@ export async function PUT(req) {
     }
 
     // Actualizar o sumar al nuevo estado
-    const targetItem = await Item.findOne({ tipo, title, descripcion, estado: nuevoEstado });
+    const targetItem = await Item.findOne({ tipo, title, descripcion, estado: nuevoEstado,imagen });
 
     if (targetItem) {
       // Si ya existe un ítem en el nuevo estado, sumamos la cantidad
@@ -63,6 +64,7 @@ export async function PUT(req) {
         descripcion,
         estado: nuevoEstado,
         cantidad: cantidadNumerica,
+        imagen
       });
     }
         

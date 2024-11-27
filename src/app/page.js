@@ -73,29 +73,37 @@ export default function Home() {
       <Navbar onAddClick={handleOpenAgregar} />
 
       <ModalAgregar
-        isOpen={isAgregarOpen}
-        onClose={handleCloseAgregar}
-        onSave={async (data) => {
-          try {
-            const response = await fetch("/api/addItem", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            });
-            if (!response.ok) throw new Error("Failed to add item");
-            const result = await response.json();
-            const newItem = result.data;
-            if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
-            if (newItem.tipo === "bodega")
-              setBodegas((prev) => [...prev, newItem]);
-            if (newItem.tipo === "oficina")
-              setOficinas((prev) => [...prev, newItem]);
-            handleCloseAgregar();
-          } catch (error) {
-            console.error(error);
-          }
-        }}
-      />
+  isOpen={isAgregarOpen}
+  onClose={handleCloseAgregar}
+  onSave={async (data) => {
+    try {
+      const formData = new FormData();
+      for (const key in data) {
+        formData.append(key, data[key]);
+      }
+
+      const response = await fetch("/api/addItem", {
+        method: "POST",
+        body: formData, // Enviar los datos como FormData
+      });
+
+      if (!response.ok) throw new Error("Failed to add item");
+
+      const result = await response.json();
+      const newItem = result.data;
+
+      // Actualizar los estados locales basados en el tipo
+      if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
+      if (newItem.tipo === "bodega") setBodegas((prev) => [...prev, newItem]);
+      if (newItem.tipo === "oficina") setOficinas((prev) => [...prev, newItem]);
+
+      handleCloseAgregar();
+    } catch (error) {
+      console.error(error);
+    }
+  }}
+/>
+
 
       <ModalEditar
         isOpen={isEditarOpen}
