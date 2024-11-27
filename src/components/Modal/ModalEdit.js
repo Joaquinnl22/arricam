@@ -51,6 +51,38 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-semibold mb-4">Editar Ítem</h2>
+        
+        {/* Mostrar la imagen */}
+        <div className="mb-4">
+        {formData.imagen ? (
+          <img
+            src={formData.imagen}
+            alt={formData.title}
+            className="w-full max-h-80 object-contain rounded-lg"
+          />
+        ) : (
+          <div className="text-gray-500">Sin imagen disponible</div>
+        )}
+      </div>
+
+
+        {/* Mostrar información del ítem */}
+        <div className="mb-4">
+          <div>
+            <strong>Tipo:</strong> {formData.tipo}
+          </div>
+          <div>
+            <strong>Título:</strong> {formData.title}
+          </div>
+          <div>
+            <strong>Descripción:</strong> {formData.descripcion}
+          </div>
+          <div>
+            <strong>Estado Actual:</strong> {formData.estado}
+          </div>
+        </div>
+
+        {/* Estado y cantidad */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4 flex items-center">
             <span className="mr-2 font-medium">Nuevo Estado:</span>
