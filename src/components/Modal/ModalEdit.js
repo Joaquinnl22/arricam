@@ -9,6 +9,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     estado: "",
     nuevoEstado: "",
     cantidad: 1,
+    imagen: null,
   });
   const [error, setError] = useState(""); // Estado para manejar el error
 
@@ -22,6 +23,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         estado: item.estado,
         nuevoEstado: nextEstado,
         cantidad: 1,
+        imagen: item.imagen,
       });
     }
   }, [item]);
