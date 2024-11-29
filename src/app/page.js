@@ -8,6 +8,8 @@ import ModalAgregar from "../components/Modal/ModalAdd";
 import ModalEditar from "../components/Modal/ModalEdit";
 import ModalDel  from "../components/Modal/ModaDel";
 
+
+
 export default function Home() {
   const [baños, setBaños] = useState([]);
   const [bodegas, setBodegas] = useState([]);
@@ -17,6 +19,19 @@ export default function Home() {
   const [editItem, setEditItem] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false); 
   const [deleteItem, setDeleteItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState(""); 
+
+  const filterBySearch = (items) => 
+    items.filter((item) =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  const filterByType = (items) => {
+    if (!selectedType) return items;
+    return items.filter((item) => item.tipo === selectedType);
+  };
+    
+    
 
   const fetchItems = async () => {
     try {
@@ -69,8 +84,13 @@ export default function Home() {
     items.filter((item) => item.estado === state);
 
   return (
+   
+
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
-      <Navbar onAddClick={handleOpenAgregar} />
+      <Navbar onAddClick={handleOpenAgregar}
+        onSearch={setSearchTerm} 
+        onFilterChange={setSelectedType}
+      />
 
       <ModalAgregar
   isOpen={isAgregarOpen}
@@ -140,10 +160,11 @@ export default function Home() {
             </span>
           </h2>
           <div className="space-y-6">
+          {filterBySearch(filterByType(filterByState(baños, "disponible"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(baños, "disponible").map((baño) => (
+                {filterBySearch(filterByType(filterByState(baños, "disponible"))).map((baño) => (
                   <BañoItem
                     key={baño._id}
                     baño={baño}
@@ -153,13 +174,14 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
+          )}
+             {filterBySearch(filterByType(filterByState(bodegas, "disponible"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">
                 Bodegas
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(bodegas, "disponible").map((bodega) => (
+                {filterBySearch(filterByType(filterByState(bodegas, "disponible"))).map((bodega) => (
                   <BodegaItem
                     key={bodega._id}
                     bodega={bodega}
@@ -169,13 +191,14 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
+             )}
+            {filterBySearch(filterByType(filterByState(oficinas, "disponible"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">
                 Oficinas
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(oficinas, "disponible").map((oficina) => (
+                {filterBySearch(filterByType(filterByState(oficinas, "disponible"))).map((oficina) => (
                   <OficinaItem
                     key={oficina._id}
                     oficina={oficina}
@@ -185,6 +208,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            )}
           </div>
         </section>
 
@@ -193,10 +217,11 @@ export default function Home() {
             <span className="inline-block p-2 bg-red-100 rounded-md">Ocupado</span>
           </h2>
           <div className="space-y-6">
+          {filterBySearch(filterByType(filterByState(baños, "ocupado"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(baños, "ocupado").map((baño) => (
+                {filterBySearch(filterByType(filterByState(baños, "ocupado"))).map((baño) => (
                   <BañoItem
                     key={baño._id}
                     baño={baño}
@@ -206,14 +231,15 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
+          )}
+           {filterBySearch(filterByType(filterByState(bodegas, "ocupado"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">
                 Bodegas
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(bodegas, "ocupado").map((bodega) => (
-                  <BodegaItem
+                {filterBySearch(filterByType(filterByState(bodegas, "ocupado"))).map((bodega) => (
+                  <BodegaItem 
                     key={bodega._id}
                     bodega={bodega}
                     onEdit={handleOpenEditar}
@@ -222,13 +248,14 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
+           )}
+          {filterBySearch(filterByType(filterByState(oficinas, "ocupado"))).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">
                 Oficinas
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterByState(oficinas, "ocupado").map((oficina) => (
+                {filterBySearch(filterByType(filterByState(oficinas, "ocupado"))).map((oficina) => (
                   <OficinaItem
                     key={oficina._id}
                     oficina={oficina}
@@ -238,9 +265,11 @@ export default function Home() {
                 ))}
               </div>
             </div>
+          )}
           </div>
         </section>
       </div>
     </div>
+
   );
 }
