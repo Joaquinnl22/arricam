@@ -4,11 +4,9 @@ import Navbar from "../components/Navbar/NavBar";
 import BañoItem from "../components/Baño/BañoItem";
 import BodegaItem from "../components/Bodega/BodegaItem";
 import OficinaItem from "../components/Oficina/OficinaItem";
-import ModalAgregar from "../components/Modal/ModalAdd"; 
+import ModalAgregar from "../components/Modal/ModalAdd";
 import ModalEditar from "../components/Modal/ModalEdit";
-import ModalDel  from "../components/Modal/ModaDel";
-
-
+import ModalDel from "../components/Modal/ModaDel";
 
 export default function Home() {
   const [baños, setBaños] = useState([]);
@@ -17,12 +15,12 @@ export default function Home() {
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const [isEditarOpen, setIsEditarOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false); 
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState(""); 
+  const [selectedType, setSelectedType] = useState("");
 
-  const filterBySearch = (items) => 
+  const filterBySearch = (items) =>
     items.filter((item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -30,8 +28,6 @@ export default function Home() {
     if (!selectedType) return items;
     return items.filter((item) => item.tipo === selectedType);
   };
-    
-    
 
   const fetchItems = async () => {
     try {
@@ -66,64 +62,67 @@ export default function Home() {
   const handleDeleteItem = async (id, cantidad) => {
     try {
       const response = await fetch(`/api/deleteItem`, {
-        method: "PUT",  // Usa PUT en lugar de DELETE
+        method: "PUT", // Usa PUT en lugar de DELETE
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, cantidad }),  // Envia id y cantidad
+        body: JSON.stringify({ id, cantidad }), // Envia id y cantidad
       });
-  
+
       if (!response.ok) throw new Error("Failed to delete item");
-  
+
       fetchItems(); // Refresca los datos
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
   };
-  
+
   const filterByState = (items, state) =>
     items.filter((item) => item.estado === state);
 
-  return (
-   
+  const calculateTotal = (items) =>
+    items.reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
+  return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
-      <Navbar onAddClick={handleOpenAgregar}
-        onSearch={setSearchTerm} 
+      <Navbar
+        onAddClick={handleOpenAgregar}
+        onSearch={setSearchTerm}
         onFilterChange={setSelectedType}
       />
 
       <ModalAgregar
-  isOpen={isAgregarOpen}
-  onClose={handleCloseAgregar}
-  onSave={async (data) => {
-    try {
-      const formData = new FormData();
-      for (const key in data) {
-        formData.append(key, data[key]);
-      }
+        isOpen={isAgregarOpen}
+        onClose={handleCloseAgregar}
+        onSave={async (data) => {
+          try {
+            const formData = new FormData();
+            for (const key in data) {
+              formData.append(key, data[key]);
+            }
 
-      const response = await fetch("/api/addItem", {
-        method: "POST",
-        body: formData, // Enviar los datos como FormData
-      });
+            const response = await fetch("/api/addItem", {
+              method: "POST",
+              body: formData, // Enviar los datos como FormData
+            });
 
-      if (!response.ok) throw new Error("Failed to add item");
+            if (!response.ok) throw new Error("Failed to add item");
 
-      const result = await response.json();
-      const newItem = result.data;
+            const result = await response.json();
+            const newItem = result.data;
 
-      // Actualizar los estados locales basados en el tipo
-      if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
-      if (newItem.tipo === "bodega") setBodegas((prev) => [...prev, newItem]);
-      if (newItem.tipo === "oficina") setOficinas((prev) => [...prev, newItem]);
+            // Actualizar los estados locales basados en el tipo
+            if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
+            if (newItem.tipo === "bodega")
+              setBodegas((prev) => [...prev, newItem]);
+            if (newItem.tipo === "oficina")
+              setOficinas((prev) => [...prev, newItem]);
 
-      handleCloseAgregar();
-    } catch (error) {
-      console.error(error);
-    }
-  }}
-/>
-
+            handleCloseAgregar();
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+      />
 
       <ModalEditar
         isOpen={isEditarOpen}
@@ -145,7 +144,7 @@ export default function Home() {
           }
         }}
       />
-       <ModalDel
+      <ModalDel
         isOpen={isDeleteOpen}
         item={deleteItem}
         onClose={handleCloseDelete}
@@ -160,116 +159,147 @@ export default function Home() {
             </span>
           </h2>
           <div className="space-y-6">
-          {filterBySearch(filterByType(filterByState(baños, "disponible"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(baños, "disponible"))).map((baño) => (
-                  <BañoItem
-                    key={baño._id}
-                    baño={baño}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            {filterBySearch(filterByType(filterByState(baños, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">Baños</h3>
+                  <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(baños, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(baños, "disponible"))
+                  ).map((baño) => (
+                    <BañoItem
+                      key={baño._id}
+                      baño={baño}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-             {filterBySearch(filterByType(filterByState(bodegas, "disponible"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Bodegas
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(bodegas, "disponible"))).map((bodega) => (
-                  <BodegaItem
-                    key={bodega._id}
-                    bodega={bodega}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            )}
+            {filterBySearch(filterByType(filterByState(bodegas, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Bodegas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(bodegas, "disponible"))
+                  ).map((bodega) => (
+                    <BodegaItem
+                      key={bodega._id}
+                      bodega={bodega}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-             )}
-            {filterBySearch(filterByType(filterByState(oficinas, "disponible"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Oficinas
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(oficinas, "disponible"))).map((oficina) => (
-                  <OficinaItem
-                    key={oficina._id}
-                    oficina={oficina}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            )}
+            {filterBySearch(filterByType(filterByState(oficinas, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Oficinas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(oficinas, "disponible"))
+                  ).map((oficina) => (
+                    <OficinaItem
+                      key={oficina._id}
+                      oficina={oficina}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
             )}
           </div>
         </section>
 
         <section>
           <h2 className="text-3xl font-extrabold text-red-700 mb-6">
-            <span className="inline-block p-2 bg-red-100 rounded-md">Ocupado</span>
+            <span className="inline-block p-2 bg-red-100 rounded-md">
+              Ocupado
+            </span>
           </h2>
           <div className="space-y-6">
-          {filterBySearch(filterByType(filterByState(baños, "ocupado"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Baños</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(baños, "ocupado"))).map((baño) => (
-                  <BañoItem
-                    key={baño._id}
-                    baño={baño}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            {filterBySearch(filterByType(filterByState(baños, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Baños
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(baños, "ocupado"))
+                  ).map((baño) => (
+                    <BañoItem
+                      key={baño._id}
+                      baño={baño}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-           {filterBySearch(filterByType(filterByState(bodegas, "ocupado"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Bodegas
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(bodegas, "ocupado"))).map((bodega) => (
-                  <BodegaItem 
-                    key={bodega._id}
-                    bodega={bodega}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            )}
+            {filterBySearch(filterByType(filterByState(bodegas, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Bodegas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(bodegas, "ocupado"))
+                  ).map((bodega) => (
+                    <BodegaItem
+                      key={bodega._id}
+                      bodega={bodega}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-           )}
-          {filterBySearch(filterByType(filterByState(oficinas, "ocupado"))).length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Oficinas
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filterBySearch(filterByType(filterByState(oficinas, "ocupado"))).map((oficina) => (
-                  <OficinaItem
-                    key={oficina._id}
-                    oficina={oficina}
-                    onEdit={handleOpenEditar}
-                    onDelete={handleOpenDelete} 
-                  />
-                ))}
+            )}
+            {filterBySearch(filterByType(filterByState(oficinas, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Oficinas
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(oficinas, "ocupado"))
+                  ).map((oficina) => (
+                    <OficinaItem
+                      key={oficina._id}
+                      oficina={oficina}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </section>
       </div>
     </div>
-
   );
 }

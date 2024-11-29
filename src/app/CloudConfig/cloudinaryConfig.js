@@ -1,7 +1,4 @@
-
-import { v2 as cloudinary } from 'cloudinary';
-
-
+import { v2 as cloudinary } from "cloudinary";
 
 // Configuración de Cloudinary
 cloudinary.config({

@@ -1,5 +1,5 @@
-import connectToDatabase from '../../../lib/mongodb';
-import mongoose from 'mongoose';
+import connectToDatabase from "../../../lib/mongodb";
+import mongoose from "mongoose";
 
 export async function GET(req) {
   try {
@@ -15,7 +15,7 @@ export async function GET(req) {
       imagen: { type: String, required: false },
     });
 
-    const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);
+    const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
 
     // Obtener todos los items de la base de datos
     const items = await Item.find();
@@ -23,13 +23,16 @@ export async function GET(req) {
     // Retornar los items
     return new Response(JSON.stringify(items), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Error al obtener los ítems:', error);
+    console.error("Error al obtener los ítems:", error);
     return new Response(
-      JSON.stringify({ message: 'Error al obtener los ítems', error: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        message: "Error al obtener los ítems",
+        error: error.message,
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

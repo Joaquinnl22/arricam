@@ -38,7 +38,9 @@ export default function BañoItem({ baño, onEdit, onDelete }) {
       <p className="text-gray-600 mb-1">{baño.descripcion}</p>
       <div className="flex items-center justify-between mt-2">
         <p className="text-sm text-gray-500">Cantidad:</p>
-        <span className="text-lg font-semibold text-gray-700">{baño.cantidad}</span>
+        <span className="text-lg font-semibold text-gray-700">
+          {baño.cantidad}
+        </span>
       </div>
     </div>
   );

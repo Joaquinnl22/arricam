@@ -14,7 +14,9 @@ const ModalDel = ({ isOpen, item, onClose, onDelete }) => {
 
   const handleConfirm = () => {
     if (cantidad > item.cantidad) {
-      setError(`La cantidad a eliminar excede la disponible (${item.cantidad}).`);
+      setError(
+        `La cantidad a eliminar excede la disponible (${item.cantidad}).`
+      );
     } else {
       onDelete(item._id, -cantidad);
     }
@@ -29,7 +31,8 @@ const ModalDel = ({ isOpen, item, onClose, onDelete }) => {
           Eliminar Cantidad
         </h2>
         <p className="text-gray-700 mb-4">
-          Ingresa la cantidad que deseas eliminar de <strong>{item.title}</strong>.
+          Ingresa la cantidad que deseas eliminar de{" "}
+          <strong>{item.title}</strong>.
         </p>
         <input
           type="number"

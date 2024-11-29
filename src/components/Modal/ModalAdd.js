@@ -52,7 +52,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
         <form onSubmit={handleSubmit}>
           {/* Tipo */}
           <div className="mb-4">
-            <label htmlFor="tipo" className="block text-sm font-medium">Tipo</label>
+            <label htmlFor="tipo" className="block text-sm font-medium">
+              Tipo
+            </label>
             <select
               id="tipo"
               name="tipo"
@@ -61,7 +63,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               className="w-full p-2 border border-gray-300 rounded bg-white"
               required
             >
-              <option value="" disabled>Seleccione un tipo</option>
+              <option value="" disabled>
+                Seleccione un tipo
+              </option>
               <option value="baño">Baño</option>
               <option value="oficina">Oficina</option>
               <option value="bodega">Bodega</option>
@@ -70,7 +74,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Nombre */}
           <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium">Nombre</label>
+            <label htmlFor="title" className="block text-sm font-medium">
+              Nombre
+            </label>
             <input
               type="text"
               id="title"
@@ -84,7 +90,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Descripción */}
           <div className="mb-4">
-            <label htmlFor="descripcion" className="block text-sm font-medium">Descripción</label>
+            <label htmlFor="descripcion" className="block text-sm font-medium">
+              Descripción
+            </label>
             <input
               type="text"
               id="descripcion"
@@ -98,7 +106,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Cantidad */}
           <div className="mb-4">
-            <label htmlFor="cantidad" className="block text-sm font-medium">Cantidad</label>
+            <label htmlFor="cantidad" className="block text-sm font-medium">
+              Cantidad
+            </label>
             <input
               type="number"
               id="cantidad"
@@ -113,7 +123,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Imagen */}
           <div className="mb-4">
-            <label htmlFor="imagen" className="block text-sm font-medium">Imagen</label>
+            <label htmlFor="imagen" className="block text-sm font-medium">
+              Imagen
+            </label>
             <input
               type="file"
               id="imagen"
