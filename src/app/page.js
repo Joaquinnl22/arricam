@@ -12,6 +12,9 @@ export default function Home() {
   const [baños, setBaños] = useState([]);
   const [bodegas, setBodegas] = useState([]);
   const [oficinas, setOficinas] = useState([]);
+  const [comedores, setComedores] = useState([]);
+  const [camarines, setCamarines] = useState([]);
+  const [guardias, setGuardias] = useState([]);
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const [isEditarOpen, setIsEditarOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
@@ -36,6 +39,9 @@ export default function Home() {
       setBaños(data.filter((item) => item.tipo === "baño"));
       setBodegas(data.filter((item) => item.tipo === "bodega"));
       setOficinas(data.filter((item) => item.tipo === "oficina"));
+      setComedores(data.filter((item) => item.tipo === "comedor"));
+      setCamarines(data.filter((item) => item.tipo === "camarin"));
+      setGuardias(data.filter((item) => item.tipo === "guardia"));
     } catch (error) {
       console.error("Error fetching items:", error);
     }
@@ -116,6 +122,12 @@ export default function Home() {
               setBodegas((prev) => [...prev, newItem]);
             if (newItem.tipo === "oficina")
               setOficinas((prev) => [...prev, newItem]);
+            if (newItem.tipo === "camarin")
+              setCamarines((prev) => [...prev, newItem]);
+            if (newItem.tipo === "comedor")
+              setComedores((prev) => [...prev, newItem]);
+            if (newItem.tipo === "guardia")
+              setGuardias((prev) => [...prev, newItem]);
 
             handleCloseAgregar();
           } catch (error) {
@@ -249,6 +261,96 @@ export default function Home() {
                 </div>
               </div>
             )}
+            {filterBySearch(filterByType(filterByState(camarines, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Camarines
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(camarines, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(camarines, "disponible"))
+                  ).map((camarin) => (
+                    <OficinaItem
+                      key={camarin._id}
+                      oficina={camarin}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )} 
+            {filterBySearch(filterByType(filterByState(comedores, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Comedores
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(comedores, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(comedores, "disponible"))
+                  ).map((comedor) => (
+                    <OficinaItem
+                      key={comedor._id}
+                      oficina={comedor}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}   
+            {filterBySearch(filterByType(filterByState(guardias, "disponible")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Guardias
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(guardias, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(guardias, "disponible"))
+                  ).map((guardia) => (
+                    <OficinaItem
+                      key={guardia._id}
+                      oficina={guardia}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}              
           </div>
         </section>
 
@@ -349,6 +451,96 @@ export default function Home() {
                 </div>
               </div>
             )}
+            {filterBySearch(filterByType(filterByState(camarines, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Camarines
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(camarines, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(camarines, "ocupado"))
+                  ).map((camarin) => (
+                    <OficinaItem
+                      key={camarin._id}
+                      oficina={camarin}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )} 
+            {filterBySearch(filterByType(filterByState(comedores, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Comedores
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(comedores, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(comedores, "ocupado"))
+                  ).map((comedor) => (
+                    <OficinaItem
+                      key={comedor._id}
+                      oficina={comedor}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}   
+            {filterBySearch(filterByType(filterByState(guardias, "ocupado")))
+              .length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  Guardias
+                </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(guardias, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterBySearch(
+                    filterByType(filterByState(guardias, "ocupado"))
+                  ).map((guardia) => (
+                    <OficinaItem
+                      key={guardia._id}
+                      oficina={guardia}
+                      onEdit={handleOpenEditar}
+                      onDelete={handleOpenDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}  
           </div>
         </section>
       </div>

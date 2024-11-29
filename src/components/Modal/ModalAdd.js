@@ -69,6 +69,9 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               <option value="baño">Baño</option>
               <option value="oficina">Oficina</option>
               <option value="bodega">Bodega</option>
+              <option value="comedor">Comedores</option>
+              <option value="camarin">Camarines</option>
+              <option value="guardia">Guardias</option>
             </select>
           </div>
 

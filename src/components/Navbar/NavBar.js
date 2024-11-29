@@ -23,6 +23,9 @@ export default function NavBar({ onAddClick, onSearch, onFilterChange }) {
           <option value="baño">Baños</option>
           <option value="bodega">Bodegas</option>
           <option value="oficina">Oficinas</option>
+          <option value="comedor">Comedores</option>
+          <option value="camarin">Camarines</option>
+          <option value="guardia">Guardiaes</option>
         </select>
 
         {/* Botón de agregar */}
