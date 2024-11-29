@@ -62,14 +62,14 @@ export default function Home() {
   const handleDeleteItem = async (id, cantidad) => {
     try {
       const response = await fetch(`/api/deleteItem`, {
-        method: "PUT", // Usa PUT en lugar de DELETE
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, cantidad }), // Envia id y cantidad
+        body: JSON.stringify({ id, cantidad }),
       });
 
       if (!response.ok) throw new Error("Failed to delete item");
 
-      fetchItems(); // Refresca los datos
+      fetchItems(); 
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -102,7 +102,7 @@ export default function Home() {
 
             const response = await fetch("/api/addItem", {
               method: "POST",
-              body: formData, // Enviar los datos como FormData
+              body: formData, 
             });
 
             if (!response.ok) throw new Error("Failed to add item");
@@ -110,7 +110,7 @@ export default function Home() {
             const result = await response.json();
             const newItem = result.data;
 
-            // Actualizar los estados locales basados en el tipo
+            
             if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
             if (newItem.tipo === "bodega")
               setBodegas((prev) => [...prev, newItem]);
@@ -148,7 +148,7 @@ export default function Home() {
         isOpen={isDeleteOpen}
         item={deleteItem}
         onClose={handleCloseDelete}
-        onDelete={handleDeleteItem} // Pasamos la función para manejar la eliminación
+        onDelete={handleDeleteItem} 
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -163,7 +163,9 @@ export default function Home() {
               .length > 0 && (
               <div className="bg-white p-6 rounded-lg shadow-lg relative">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-gray-700">Baños</h3>
+                  <h3 className="text-xl font-semibold text-gray-700">
+                    Baños
+                  </h3>
                   <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
                     {calculateTotal(
                       filterBySearch(
@@ -189,10 +191,20 @@ export default function Home() {
             )}
             {filterBySearch(filterByType(filterByState(bodegas, "disponible")))
               .length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
                   Bodegas
                 </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(bodegas, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filterBySearch(
                     filterByType(filterByState(bodegas, "disponible"))
@@ -209,10 +221,20 @@ export default function Home() {
             )}
             {filterBySearch(filterByType(filterByState(oficinas, "disponible")))
               .length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
                   Oficinas
                 </h3>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(oficinas, "disponible"))
+                      )
+                    )}{" "}
+                    disponibles
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filterBySearch(
                     filterByType(filterByState(oficinas, "disponible"))
@@ -239,10 +261,20 @@ export default function Home() {
           <div className="space-y-6">
             {filterBySearch(filterByType(filterByState(baños, "ocupado")))
               .length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
                   Baños
                 </h3>
+                <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(oficinas, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filterBySearch(
                     filterByType(filterByState(baños, "ocupado"))
@@ -259,10 +291,20 @@ export default function Home() {
             )}
             {filterBySearch(filterByType(filterByState(bodegas, "ocupado")))
               .length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
                   Bodegas
                 </h3>
+                <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(bodegas, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filterBySearch(
                     filterByType(filterByState(bodegas, "ocupado"))
@@ -279,10 +321,20 @@ export default function Home() {
             )}
             {filterBySearch(filterByType(filterByState(oficinas, "ocupado")))
               .length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                  Oficinas
+              <div className="bg-white p-6 rounded-lg shadow-lg relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700">
+                  oficinas
                 </h3>
+                <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full mr-2">
+                    {calculateTotal(
+                      filterBySearch(
+                        filterByType(filterByState(oficinas, "ocupado"))
+                      )
+                    )}{" "}
+                    ocupados
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filterBySearch(
                     filterByType(filterByState(oficinas, "ocupado"))
