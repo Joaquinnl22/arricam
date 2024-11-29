@@ -269,7 +269,7 @@ export default function Home() {
                 <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full mr-2">
                     {calculateTotal(
                       filterBySearch(
-                        filterByType(filterByState(oficinas, "ocupado"))
+                        filterByType(filterByState(baños, "ocupado"))
                       )
                     )}{" "}
                     ocupados

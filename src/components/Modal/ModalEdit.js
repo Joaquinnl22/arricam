@@ -15,7 +15,8 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
 
   useEffect(() => {
     if (item) {
-      const nextEstado = item.estado === "disponible" ? "ocupado" : "disponible";
+      const nextEstado =
+        item.estado === "disponible" ? "ocupado" : "disponible";
       setFormData({
         tipo: item.tipo,
         title: item.title,
@@ -31,7 +32,9 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.cantidad > item.cantidad) {
-      setError(`La cantidad ingresada (${formData.cantidad}) excede la disponible (${item.cantidad}).`);
+      setError(
+        `La cantidad ingresada (${formData.cantidad}) excede la disponible (${item.cantidad}).`
+      );
       return;
     }
     onSave(formData);
@@ -51,20 +54,19 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-semibold mb-4">Editar Ítem</h2>
-        
+
         {/* Mostrar la imagen */}
         <div className="mb-4">
-        {formData.imagen ? (
-          <img
-            src={formData.imagen}
-            alt={formData.title}
-            className="w-full max-h-80 object-contain rounded-lg"
-          />
-        ) : (
-          <div className="text-gray-500">Sin imagen disponible</div>
-        )}
-      </div>
-
+          {formData.imagen ? (
+            <img
+              src={formData.imagen}
+              alt={formData.title}
+              className="w-full max-h-80 object-contain rounded-lg"
+            />
+          ) : (
+            <div className="text-gray-500">Sin imagen disponible</div>
+          )}
+        </div>
 
         {/* Mostrar información del ítem */}
         <div className="mb-4">
@@ -102,7 +104,9 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
               onChange={(e) => {
                 const cantidadIngresada = parseInt(e.target.value, 10);
                 if (cantidadIngresada > item.cantidad) {
-                  setError(`Cantidad ingresada (${cantidadIngresada}) excede la disponible (${item.cantidad}).`);
+                  setError(
+                    `Cantidad ingresada (${cantidadIngresada}) excede la disponible (${item.cantidad}).`
+                  );
                 } else {
                   setError(""); // Limpiar el error si la cantidad es válida
                 }
@@ -120,11 +124,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
             </small>
           </div>
 
-          {error && (
-            <div className="mb-4 text-red-500 text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
 
           <div className="flex justify-between">
             <button
