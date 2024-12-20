@@ -11,6 +11,8 @@ import {
   FaShieldAlt,
 } from "react-icons/fa";
 import { ImOffice } from "react-icons/im";
+import { PiShippingContainerFill } from "react-icons/pi";
+
 
 export default function Home() {
   const [items, setItems] = useState({
@@ -21,6 +23,7 @@ export default function Home() {
     comedores: [],
     camarines: [],
     guardias: [],
+    reef: [],
   });
 
   const [selectedType, setSelectedType] = useState("");
@@ -46,6 +49,7 @@ export default function Home() {
         comedores: groupedItems.comedor || [],
         camarines: groupedItems.camarin || [],
         guardias: groupedItems.guardia || [],
+        reef: groupedItems.reef || [],
       });
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -146,6 +150,7 @@ export default function Home() {
         {renderBlock("Comedores", items.comedores, FaUtensils)}
         {renderBlock("Camarines", items.camarines, FaUsers)}
         {renderBlock("Guardias", items.guardias, FaShieldAlt)}
+        {renderBlock("Reef", items.reef, PiShippingContainerFill)}
       </div>
     </div>
   );

@@ -41,6 +41,7 @@ export default function NavBar({ onAddClick, onFilterChange }) {
           <option value="comedor">Comedores</option>
           <option value="camarin">Camarines</option>
           <option value="guardia">Guardias</option>
+          <option value="reef">Reef</option>
         </select>
 
         {/* Botón de agregar */}
