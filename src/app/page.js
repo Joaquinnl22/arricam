@@ -17,15 +17,15 @@ export default function Home() {
     baños: [],
     bodegas: [],
     oficinas: [],
-    oficinasconbaño :[],
+    oficinasconbaño: [],
     comedores: [],
     camarines: [],
     guardias: [],
   });
 
   const [selectedType, setSelectedType] = useState("");
-   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
-   const handleCloseAgregar = () => setIsAgregarOpen(false);
+  const [isAgregarOpen, setIsAgregarOpen] = useState(false);
+  const handleCloseAgregar = () => setIsAgregarOpen(false);
 
   const fetchItems = async () => {
     try {
@@ -59,24 +59,24 @@ export default function Home() {
   const calculateStateCounts = (items, state) => {
     return items
       .filter((item) => item.estado === state)
-      .reduce((sum, item) => sum + (item.cantidad || 0), 0); // Sum the "cantidad" field
+      .reduce((sum, item) => sum + (item.cantidad || 0), 0);
   };
-  
+
   const renderBlock = (type, items, Icon) => {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
     const occupiedCount = calculateStateCounts(items, "ocupado");
-  
+
     return (
       <div
         key={type}
-        className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg"
+        className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center"
       >
         <div className="flex items-center space-x-3 mb-4">
           <Icon className="h-8 w-8 text-gray-700" />
-          <h3 className="text-xl font-bold text-gray-800">{type}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{type}</h3>
         </div>
-        <div className="grid grid-cols-3 gap-4 mb-4 mt-6 text-center">
+        <div className="grid grid-cols-3 gap-4 w-full text-center">
           <div>
             <div className="text-2xl font-extrabold text-green-600">
               {availableCount}
@@ -99,12 +99,11 @@ export default function Home() {
       </div>
     );
   };
-  
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <Navbar onAddClick={handleOpenAgregar}  onFilterChange={setSelectedType} />
-      
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
+      <Navbar onAddClick={handleOpenAgregar} onFilterChange={setSelectedType} />
+
       <ModalAgregar
         isOpen={isAgregarOpen}
         onClose={handleCloseAgregar}
@@ -125,19 +124,10 @@ export default function Home() {
             const result = await response.json();
             const newItem = result.data;
 
-            if (newItem.tipo === "baño") setBaños((prev) => [...prev, newItem]);
-            if (newItem.tipo === "bodega")
-              setBodegas((prev) => [...prev, newItem]);
-            if (newItem.tipo === "oficina")
-              setOficinas((prev) => [...prev, newItem]);
-            if (newItem.tipo === "oficina con baño")
-              setOficinasconbaño((prev) => [...prev, newItem]);
-            if (newItem.tipo === "camarin")
-              setCamarines((prev) => [...prev, newItem]);
-            if (newItem.tipo === "comedor")
-              setComedores((prev) => [...prev, newItem]);
-            if (newItem.tipo === "guardia")
-              setGuardias((prev) => [...prev, newItem]);
+            setItems((prev) => ({
+              ...prev,
+              [newItem.tipo]: [...(prev[newItem.tipo] || []), newItem],
+            }));
 
             handleCloseAgregar();
           } catch (error) {
@@ -145,14 +135,14 @@ export default function Home() {
           }
         }}
       />
-      <h1 className="text-3xl font-extrabold text-center text-gray-800 my-6">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-gray-800 my-6">
         Stock de los container
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {renderBlock("Baños", items.baños, FaToilet)}
         {renderBlock("Bodegas", items.bodegas, FaWarehouse)}
         {renderBlock("Oficinas", items.oficinas, FaBuilding)}
-        {renderBlock("Oficinas con baño", items.oficinasconbaño, ImOffice )}
+        {renderBlock("Oficinas con baño", items.oficinasconbaño, ImOffice)}
         {renderBlock("Comedores", items.comedores, FaUtensils)}
         {renderBlock("Camarines", items.camarines, FaUsers)}
         {renderBlock("Guardias", items.guardias, FaShieldAlt)}

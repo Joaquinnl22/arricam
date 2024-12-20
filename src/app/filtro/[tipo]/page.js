@@ -33,7 +33,6 @@ export default function FiltroPorTipoPage({ params }) {
 
   const decodedTipo = decodeURIComponent(tipo);
 
-
   const fetchItems = async () => {
     setLoading(true); // Start loading
     try {
@@ -47,6 +46,7 @@ export default function FiltroPorTipoPage({ params }) {
       setLoading(false); // End loading
     }
   };
+
   const groupItemsByTipo = (items) => {
     const filteredByTipo = decodedTipo
       ? items.filter((item) => normalize(item.tipo) === normalize(decodedTipo))
@@ -120,7 +120,7 @@ export default function FiltroPorTipoPage({ params }) {
     (items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-4 sm:p-6">
       <Navbar onAddClick={handleOpenAgregar} />
 
       <ModalAgregar
@@ -176,59 +176,61 @@ export default function FiltroPorTipoPage({ params }) {
         onClose={handleCloseDelete}
         onDelete={handleDeleteItem}
       />
-      {/* Display loading icon or content */}
-        {loading ? (
+
+      {loading ? (
         <div className="flex justify-center items-center min-h-[50vh]">
-          <FaSpinner className="text-black-500 text-4xl animate-spin" />
+          <FaSpinner className="text-black text-4xl animate-spin" />
         </div>
       ) : (
         <>
-      <h1 className="text-4xl font-extrabold text-center text-gray-800 my-8">
-        {capitalizeFirstLetter(decodedTipo)}s
-      </h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 my-6">
+            {capitalizeFirstLetter(decodedTipo)}s
+          </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-green-600">
-              Disponible
-            </h2>
-            <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
-              {calculateTotal(filteredItems.disponible)} disponibles
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {renderItems(filteredItems.disponible)}
-          </div>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-green-600">
+                  Disponible
+                </h2>
+                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
+                  {calculateTotal(filteredItems.disponible)} disponibles
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {renderItems(filteredItems.disponible)}
+              </div>
+            </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-yellow-600">
-              Mantención
-            </h2>
-            <span className="bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
-              {calculateTotal(filteredItems.mantencion)} en mantención
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {renderItems(filteredItems.mantencion)}
-          </div>
-        </div>
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-yellow-600">
+                  Mantención
+                </h2>
+                <span className="bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
+                  {calculateTotal(filteredItems.mantencion)} en mantención
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {renderItems(filteredItems.mantencion)}
+              </div>
+            </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-red-600">Ocupado</h2>
-            <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
-              {calculateTotal(filteredItems.ocupado)} ocupados
-            </span>
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-red-600">
+                  Ocupado
+                </h2>
+                <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
+                  {calculateTotal(filteredItems.ocupado)} ocupados
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {renderItems(filteredItems.ocupado)}
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {renderItems(filteredItems.ocupado)}
-          </div>
-        </div>
-      </div>
-      </>
+        </>
       )}
     </div>
   );

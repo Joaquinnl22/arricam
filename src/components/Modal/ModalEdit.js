@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { FaCheckCircle, FaTimesCircle, FaTools } from "react-icons/fa";
 
@@ -11,8 +13,9 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     cantidad: 1,
     imagen: null,
   });
-  const [error, setError] = useState(""); // Estado para manejar el error
+  const [error, setError] = useState("");
   const estadosPosibles = ["disponible", "ocupado", "mantencion"];
+
   useEffect(() => {
     if (item) {
       setFormData({
@@ -20,7 +23,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         title: item.title,
         descripcion: item.descripcion,
         estado: item.estado,
-        nuevoEstado: "", // Inicializa vacío hasta que se seleccione
+        nuevoEstado: "",
         cantidad: 1,
         imagen: item.imagen,
       });
@@ -39,27 +42,27 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       );
       return;
     }
-    onSave(formData); // Guardar cambios
-    onClose(); // Cerrar el modal
+    onSave(formData);
+    onClose();
   };
 
   const renderEstadoIcon = (estado) => {
     if (estado === "disponible")
-      return <FaCheckCircle className="text-green-500 text-3xl" />;
+      return <FaCheckCircle className="text-green-500 text-xl sm:text-2xl" />;
     if (estado === "ocupado")
-      return <FaTimesCircle className="text-red-500 text-3xl" />;
+      return <FaTimesCircle className="text-red-500 text-xl sm:text-2xl" />;
     if (estado === "mantencion")
-      return <FaTools className="text-yellow-500 text-3xl" />;
+      return <FaTools className="text-yellow-500 text-xl sm:text-2xl" />;
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-semibold mb-4">Editar Ítem</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-lg">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Editar Ítem</h2>
 
-        {/* Mostrar la imagen */}
+        {/* Imagen */}
         <div className="mb-4">
           {formData.imagen ? (
             <div className="flex items-center justify-center w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
@@ -76,7 +79,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
           )}
         </div>
 
-        {/* Mostrar información del ítem */}
+        {/* Información del ítem */}
         <div className="mb-4">
           <div>
             <strong>Tipo:</strong> {formData.tipo}
@@ -98,9 +101,9 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
             <label htmlFor="nuevoEstado" className="block text-sm font-medium">
               Nuevo Estado:
             </label>
-            <div className="flex items-center space-x-4 mt-2">
+            <div className="flex flex-wrap gap-4 mt-2">
               {estadosPosibles
-                .filter((estado) => estado !== formData.estado) // Excluir el estado actual
+                .filter((estado) => estado !== formData.estado)
                 .map((estado) => (
                   <button
                     key={estado}
@@ -141,7 +144,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
                     `Cantidad ingresada (${cantidadIngresada}) excede la disponible (${item.cantidad}).`
                   );
                 } else {
-                  setError(""); // Limpiar el error si la cantidad es válida
+                  setError("");
                 }
                 setFormData((prevData) => ({
                   ...prevData,
@@ -163,14 +166,14 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 transition-all"
             >
               Cancelar
             </button>
 
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition-all"
             >
               Guardar
             </button>

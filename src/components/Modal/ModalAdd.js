@@ -46,9 +46,11 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-semibold mb-4">Agregar Item</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 sm:p-8">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-center">
+          Agregar Ítem
+        </h2>
         <form onSubmit={handleSubmit}>
           {/* Tipo */}
           <div className="mb-4">
@@ -68,7 +70,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               </option>
               <option value="baño">Baño</option>
               <option value="oficina">Oficina</option>
-              <option value= "oficina con baño">Oficina con baño</option>
+              <option value="oficina con baño">Oficina con baño</option>
               <option value="bodega">Bodega</option>
               <option value="comedor">Comedores</option>
               <option value="camarin">Camarines</option>
@@ -97,15 +99,15 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
             <label htmlFor="descripcion" className="block text-sm font-medium">
               Descripción
             </label>
-            <input
-              type="text"
+            <textarea
               id="descripcion"
               name="descripcion"
               value={formData.descripcion}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded resize-none"
+              rows="3"
               required
-            />
+            ></textarea>
           </div>
 
           {/* Cantidad */}
@@ -124,9 +126,10 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               required
             />
           </div>
+
           {/* Estado */}
-             <div className="mb-4">
-            <label htmlFor="estado " className="block text-sm font-medium">
+          <div className="mb-4">
+            <label htmlFor="estado" className="block text-sm font-medium">
               Estado
             </label>
             <select
@@ -166,13 +169,13 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition-all"
             >
               Agregar
             </button>
