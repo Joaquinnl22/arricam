@@ -20,12 +20,12 @@ export default function ItemCard({ item, onEdit, onDelete }) {
       )}
 
       {/* Título */}
-      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 truncate">
         {title || "Sin título"}
       </h3>
 
       {/* Descripción */}
-      <p className="text-gray-600 text-sm sm:text-base mb-2">
+      <p className="text-gray-600 text-sm sm:text-base mb-2 line-clamp-2">
         {descripcion || "Sin descripción"}
       </p>
 
@@ -66,3 +66,4 @@ export default function ItemCard({ item, onEdit, onDelete }) {
     </div>
   );
 }
+
