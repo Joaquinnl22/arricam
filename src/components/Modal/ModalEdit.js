@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaTools } from "react-icons/fa";
 
 const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -12,17 +12,15 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     imagen: null,
   });
   const [error, setError] = useState(""); // Estado para manejar el error
-
+  const estadosPosibles = ["disponible", "ocupado", "mantencion"];
   useEffect(() => {
     if (item) {
-      const nextEstado =
-        item.estado === "disponible" ? "ocupado" : "disponible";
       setFormData({
         tipo: item.tipo,
         title: item.title,
         descripcion: item.descripcion,
         estado: item.estado,
-        nuevoEstado: nextEstado,
+        nuevoEstado: "", // Inicializa vacío hasta que se seleccione
         cantidad: 1,
         imagen: item.imagen,
       });
@@ -31,21 +29,27 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.nuevoEstado) {
+      setError("Por favor selecciona un nuevo estado.");
+      return;
+    }
     if (formData.cantidad > item.cantidad) {
       setError(
         `La cantidad ingresada (${formData.cantidad}) excede la disponible (${item.cantidad}).`
       );
       return;
     }
-    onSave(formData);
-    onClose();
+    onSave(formData); // Guardar cambios
+    onClose(); // Cerrar el modal
   };
 
-  const renderEstadoIcon = () => {
-    if (formData.nuevoEstado === "disponible") {
+  const renderEstadoIcon = (estado) => {
+    if (estado === "disponible")
       return <FaCheckCircle className="text-green-500 text-3xl" />;
-    }
-    return <FaTimesCircle className="text-red-500 text-3xl" />;
+    if (estado === "ocupado")
+      return <FaTimesCircle className="text-red-500 text-3xl" />;
+    if (estado === "mantencion")
+      return <FaTools className="text-yellow-500 text-3xl" />;
   };
 
   if (!isOpen) return null;
@@ -58,13 +62,17 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         {/* Mostrar la imagen */}
         <div className="mb-4">
           {formData.imagen ? (
-            <img
-              src={formData.imagen}
-              alt={formData.title}
-              className="w-full max-h-80 object-contain rounded-lg"
-            />
+            <div className="flex items-center justify-center w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+              <img
+                src={formData.imagen}
+                alt={formData.title}
+                className="object-cover w-full h-full"
+              />
+            </div>
           ) : (
-            <div className="text-gray-500">Sin imagen disponible</div>
+            <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-lg">
+              <p className="text-gray-500">Sin imagen disponible</p>
+            </div>
           )}
         </div>
 
@@ -84,14 +92,39 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
           </div>
         </div>
 
-        {/* Estado y cantidad */}
+        {/* Selección de nuevo estado */}
         <form onSubmit={handleSubmit}>
-          <div className="mb-4 flex items-center">
-            <span className="mr-2 font-medium">Nuevo Estado:</span>
-            {renderEstadoIcon()}
-            <span className="ml-2 capitalize">{formData.nuevoEstado}</span>
+          <div className="mb-4">
+            <label htmlFor="nuevoEstado" className="block text-sm font-medium">
+              Nuevo Estado:
+            </label>
+            <div className="flex items-center space-x-4 mt-2">
+              {estadosPosibles
+                .filter((estado) => estado !== formData.estado) // Excluir el estado actual
+                .map((estado) => (
+                  <button
+                    key={estado}
+                    type="button"
+                    onClick={() =>
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        nuevoEstado: estado,
+                      }))
+                    }
+                    className={`flex items-center px-4 py-2 border rounded-lg ${
+                      formData.nuevoEstado === estado
+                        ? "bg-blue-100 border-blue-500"
+                        : "bg-gray-100 border-gray-300"
+                    }`}
+                  >
+                    {renderEstadoIcon(estado)}
+                    <span className="ml-2 capitalize">{estado}</span>
+                  </button>
+                ))}
+            </div>
           </div>
 
+          {/* Cantidad */}
           <div className="mb-4">
             <label htmlFor="cantidad" className="block text-sm font-medium">
               Cantidad

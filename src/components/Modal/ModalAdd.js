@@ -68,6 +68,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               </option>
               <option value="baño">Baño</option>
               <option value="oficina">Oficina</option>
+              <option value= "oficina con baño">Oficina con baño</option>
               <option value="bodega">Bodega</option>
               <option value="comedor">Comedores</option>
               <option value="camarin">Camarines</option>
@@ -122,6 +123,27 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               className="w-full p-2 border border-gray-300 rounded"
               required
             />
+          </div>
+          {/* Estado */}
+             <div className="mb-4">
+            <label htmlFor="estado " className="block text-sm font-medium">
+              Estado
+            </label>
+            <select
+              id="estado"
+              name="estado"
+              value={formData.estado}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded bg-white"
+              required
+            >
+              <option value="" disabled>
+                Seleccione un Estado
+              </option>
+              <option value="disponible">Disponible</option>
+              <option value="ocupado">Ocupado</option>
+              <option value="mantencion">Mantención</option>
+            </select>
           </div>
 
           {/* Imagen */}
