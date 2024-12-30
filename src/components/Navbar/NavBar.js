@@ -35,9 +35,10 @@ export default function NavBar({ onAddClick, onFilterChange }) {
         >
           <option value="">Todos</option>
           <option value="baño">Baños</option>
-          <option value="bodega">Bodegas</option>
-          <option value="oficina">Oficinas</option>
-          <option value="oficina con baño">Oficinas con baño</option>
+          <option value="BOD20">BOD20</option>
+          <option value="BOD40">BOD40</option>
+          <option value="oficina">Oficinas (OPL)</option>
+          <option value="oficina con baño">Oficinas con baño (OCB)</option>
           <option value="comedor">Comedores</option>
           <option value="camarin">Camarines</option>
           <option value="guardia">Guardias</option>

@@ -16,7 +16,8 @@ import { PiShippingContainerFill } from "react-icons/pi";
 export default function Home() {
   const [items, setItems] = useState({
     baños: [],
-    bodegas: [],
+    BOD40: [],
+    BOD20: [],
     oficinas: [],
     oficinasconbaño: [],
     comedores: [],
@@ -42,7 +43,8 @@ export default function Home() {
 
       setItems({
         baños: groupedItems.baño || [],
-        bodegas: groupedItems.bodega || [],
+        BOD20: groupedItems.BOD20 || [],
+        BOD40: groupedItems.BOD40 || [],
         oficinas: groupedItems.oficina || [],
         oficinasconbaño: groupedItems["oficina con baño"] || [],
         comedores: groupedItems.comedor || [],
@@ -54,7 +56,9 @@ export default function Home() {
       console.error("Error fetching items:", error);
     }
   };
+
   const handleOpenAgregar = () => setIsAgregarOpen(true);
+
   useEffect(() => {
     fetchItems();
   }, []);
@@ -63,6 +67,15 @@ export default function Home() {
     return items
       .filter((item) => item.estado === state)
       .reduce((sum, item) => sum + (item.cantidad || 0), 0);
+  };
+
+  const calculateGlobalStock = (items) => {
+    return Object.values(items).reduce((total, itemGroup) => {
+      return (
+        total +
+        itemGroup.reduce((groupSum, item) => groupSum + (item.cantidad || 0), 0)
+      );
+    }, 0);
   };
 
   const renderBlock = (type, items, Icon) => {
@@ -76,7 +89,7 @@ export default function Home() {
         className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center"
       >
         <div className="grid grid-cols-5 gap-4 w-full text-center">
-          <div className="flex  space-x-3 mx-4">
+          <div className="flex space-x-3 mx-4">
             <Icon className="h-8 w-8 text-gray-700" />
             <h3 className="text-lg sm:text-xl font-bold text-gray-800">
               {type}
@@ -88,13 +101,13 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-yellow-500">
-              {maintenanceCount}
+            <div className="text-2xl font-extrabold text-red-500">
+              {occupiedCount}
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-red-500">
-              {occupiedCount}
+            <div className="text-2xl font-extrabold text-yellow-500">
+              {maintenanceCount}
             </div>
           </div>
           <div>
@@ -106,6 +119,26 @@ export default function Home() {
       </div>
     );
   };
+
+  const globalAvailable = Object.values(items).reduce((total, itemGroup) => {
+    return (
+      total +
+      itemGroup
+        .filter((item) => item.estado === "disponible")
+        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    );
+  }, 0);
+
+  const globalOccupied = Object.values(items).reduce((total, itemGroup) => {
+    return (
+      total +
+      itemGroup
+        .filter((item) => item.estado === "ocupado")
+        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
+    );
+  }, 0);
+
+  const globalStock = calculateGlobalStock(items);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
@@ -142,22 +175,44 @@ export default function Home() {
           }
         }}
       />
+
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-gray-800 my-6">
         Stock de los container
       </h1>
-      <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6  ">
+
+      {/* Resumen Global */}
+      <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Resumen Global</h2>
+        <div className="grid grid-cols-3 gap-4 w-full text-center">
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Disponible</h3>
+            <div className="text-2xl font-extrabold text-green-600">{globalAvailable}</div>
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Ocupado</h3>
+            <div className="text-2xl font-extrabold text-red-500">{globalOccupied}</div>
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Stock Total</h3>
+            <div className="text-2xl font-extrabold text-blue-500">{globalStock}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
         <div className="grid grid-cols-5 gap-4 w-full text-center">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">items</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Items</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Disponible</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Ocupado</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Stock</h3>
         </div>
       </div>
 
       <div className="grid grid-rows-8 gap-4">
         {renderBlock("Baños", items.baños, FaToilet)}
-        {renderBlock("Bodegas", items.bodegas, FaWarehouse)}
+        {renderBlock("BOD20", items.BOD20, FaWarehouse)}
+        {renderBlock("BOD40", items.BOD40, FaWarehouse)}
         {renderBlock("Oficinas", items.oficinas, FaBuilding)}
         {renderBlock("Oficinas con baño", items.oficinasconbaño, ImOffice)}
         {renderBlock("Comedores", items.comedores, FaUtensils)}
