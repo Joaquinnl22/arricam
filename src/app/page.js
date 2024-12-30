@@ -13,7 +13,6 @@ import {
 import { ImOffice } from "react-icons/im";
 import { PiShippingContainerFill } from "react-icons/pi";
 
-
 export default function Home() {
   const [items, setItems] = useState({
     baños: [],
@@ -76,28 +75,32 @@ export default function Home() {
         key={type}
         className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center"
       >
-        <div className="flex items-center space-x-3 mb-4">
-          <Icon className="h-8 w-8 text-gray-700" />
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{type}</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-4 w-full text-center">
+        <div className="grid grid-cols-5 gap-4 w-full text-center">
+          <div className="flex  space-x-3 mx-4">
+            <Icon className="h-8 w-8 text-gray-700" />
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+              {type}
+            </h3>
+          </div>
           <div>
             <div className="text-2xl font-extrabold text-green-600">
               {availableCount}
             </div>
-            <div className="text-sm text-gray-600">Disponible</div>
           </div>
           <div>
             <div className="text-2xl font-extrabold text-yellow-500">
               {maintenanceCount}
             </div>
-            <div className="text-sm text-gray-600">En Mantención</div>
           </div>
           <div>
             <div className="text-2xl font-extrabold text-red-500">
               {occupiedCount}
             </div>
-            <div className="text-sm text-gray-600">Ocupado</div>
+          </div>
+          <div>
+            <div className="text-2xl font-extrabold text-blue-500">
+              {occupiedCount + maintenanceCount + availableCount}
+            </div>
           </div>
         </div>
       </div>
@@ -142,7 +145,17 @@ export default function Home() {
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-gray-800 my-6">
         Stock de los container
       </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6  ">
+        <div className="grid grid-cols-5 gap-4 w-full text-center">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">items</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Disponible</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Ocupado</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Stock</h3>
+        </div>
+      </div>
+
+      <div className="grid grid-rows-8 gap-4">
         {renderBlock("Baños", items.baños, FaToilet)}
         {renderBlock("Bodegas", items.bodegas, FaWarehouse)}
         {renderBlock("Oficinas", items.oficinas, FaBuilding)}
