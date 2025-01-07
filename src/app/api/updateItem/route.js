@@ -20,34 +20,33 @@ export async function PUT(req) {
     const { tipo, title, descripcion, estado, nuevoEstado, cantidad, imagen } =
       await req.json();
 
-    // Asegurarse de que 'cantidad' sea un número
-    const cantidadNumerica = Number(cantidad); // Convierte a número
+    // Convert 'cantidad' to a number
+    const cantidadNumerica = Number(cantidad);
 
+    // Validation: Ensure required fields are present and valid
     if (
       !tipo ||
       !title ||
       !descripcion ||
       !estado ||
       !nuevoEstado ||
-      isNaN(cantidadNumerica) ||
-      !imagen
+      isNaN(cantidadNumerica)
     ) {
       return new Response(
         JSON.stringify({
-          message:
-            "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
+          message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Encontrar el ítem actual con el estado y descripción originales
+    // Find the current item based on the original state
     const currentItem = await Item.findOne({
       tipo,
       title,
       descripcion,
       estado,
-      imagen,
+      imagen: imagen || null, // Handle undefined 'imagen'
     });
 
     if (!currentItem) {
@@ -57,7 +56,7 @@ export async function PUT(req) {
       );
     }
 
-    // Verificar si la cantidad solicitada es mayor que la disponible
+    // Check if the requested quantity exceeds the available amount
     if (cantidadNumerica > currentItem.cantidad) {
       return new Response(
         JSON.stringify({
@@ -67,39 +66,39 @@ export async function PUT(req) {
       );
     }
 
-    // Actualizar o sumar al nuevo estado
+    // Find or create the target item with the new state
     const targetItem = await Item.findOne({
       tipo,
       title,
       descripcion,
       estado: nuevoEstado,
-      imagen,
+      imagen: imagen || null, // Handle undefined 'imagen'
     });
 
     if (targetItem) {
-      // Si ya existe un ítem en el nuevo estado, sumamos la cantidad
+      // Update the quantity of the target item
       targetItem.cantidad += cantidadNumerica;
       await targetItem.save();
     } else {
-      // Si no existe, creamos un nuevo ítem
+      // Create a new item if it doesn't exist
       await Item.create({
         tipo,
         title,
         descripcion,
         estado: nuevoEstado,
         cantidad: cantidadNumerica,
-        imagen,
+        imagen: imagen || null, // Handle undefined 'imagen'
       });
     }
 
-    // Reducir la cantidad del estado original
+    // Reduce the quantity of the original item
     currentItem.cantidad -= cantidadNumerica;
 
     if (currentItem.cantidad <= 0) {
-      // Si la cantidad llega a 0, eliminamos el ítem original
+      // Delete the original item if its quantity reaches 0
       await currentItem.deleteOne();
     } else {
-      // Guardamos los cambios si todavía hay cantidad restante
+      // Save the remaining quantity
       await currentItem.save();
     }
 
@@ -117,3 +116,4 @@ export async function PUT(req) {
     );
   }
 }
+  

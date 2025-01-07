@@ -43,6 +43,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       return;
     }
     onSave(formData);
+    console.log("Data sent to server:", formData);
     onClose();
   };
 
