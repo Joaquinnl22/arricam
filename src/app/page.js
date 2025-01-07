@@ -81,7 +81,7 @@ export default function Home() {
   const renderBlock = (type, items, Icon) => {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
-    const occupiedCount = calculateStateCounts(items, "ocupado");
+    const occupiedCount = calculateStateCounts(items, "Arriendo");
 
     return (
       <div
@@ -133,7 +133,7 @@ export default function Home() {
     return (
       total +
       itemGroup
-        .filter((item) => item.estado === "ocupado")
+        .filter((item) => item.estado === "arriendo")
         .reduce((sum, item) => sum + (item.cantidad || 0), 0)
     );
   }, 0);
@@ -189,7 +189,7 @@ export default function Home() {
             <div className="text-2xl font-extrabold text-green-600">{globalAvailable}</div>
           </div>
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Ocupado</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Arriendo</h3>
             <div className="text-2xl font-extrabold text-red-500">{globalOccupied}</div>
           </div>
           <div>
@@ -203,7 +203,7 @@ export default function Home() {
         <div className="grid grid-cols-5 gap-4 w-full text-center">
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Items</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Disponible</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Ocupado</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Arriendo</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Stock</h3>
         </div>

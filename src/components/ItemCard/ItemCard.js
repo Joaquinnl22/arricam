@@ -34,15 +34,15 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         className={`text-sm font-medium mb-2 ${
           estado === "disponible"
             ? "text-green-600"
-               : estado === "ocupado"
+               : estado === "arriendo"
             ? "text-red-600"
             : "text-orange-600"
         }`}
       >
         {estado === "disponible"
           ? "Disponible"
-          : estado === "ocupado"
-          ? "Ocupado"
+          : estado === "arriendo"
+          ? "arriendo"
           : "Mantención"}
       </span>
 

@@ -146,7 +146,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
                 Seleccione un Estado
               </option>
               <option value="disponible">Disponible</option>
-              <option value="ocupado">Ocupado</option>
+              <option value="arriendo">Arriendo</option>
               <option value="mantencion">Mantención</option>
             </select>
           </div>

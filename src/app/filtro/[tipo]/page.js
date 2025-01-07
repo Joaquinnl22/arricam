@@ -14,7 +14,7 @@ export default function FiltroPorTipoPage({ params }) {
   const [filteredItems, setFilteredItems] = useState({
     disponible: [],
     mantencion: [],
-    ocupado: [],
+    arriendo: [],
   });
 
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
@@ -55,7 +55,7 @@ export default function FiltroPorTipoPage({ params }) {
     setFilteredItems({
       disponible: filteredByTipo.filter((item) => item.estado === "disponible"),
       mantencion: filteredByTipo.filter((item) => item.estado === "mantencion"),
-      ocupado: filteredByTipo.filter((item) => item.estado === "ocupado"),
+      arriendo: filteredByTipo.filter((item) => item.estado === "arriendo"),
     });
   };
 
@@ -219,14 +219,14 @@ export default function FiltroPorTipoPage({ params }) {
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-red-600">
-                  Ocupado
+                  Arriendo
                 </h2>
                 <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
-                  {calculateTotal(filteredItems.ocupado)} ocupados
+                  {calculateTotal(filteredItems.arriendo)} arriendos
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderItems(filteredItems.ocupado)}
+                {renderItems(filteredItems.arriendo)}
               </div>
             </div>
           </div>

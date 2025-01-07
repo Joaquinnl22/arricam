@@ -14,7 +14,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     imagen: null,
   });
   const [error, setError] = useState("");
-  const estadosPosibles = ["disponible", "ocupado", "mantencion"];
+  const estadosPosibles = ["disponible", "arriendo", "mantencion"];
 
   useEffect(() => {
     if (item) {
@@ -49,7 +49,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const renderEstadoIcon = (estado) => {
     if (estado === "disponible")
       return <FaCheckCircle className="text-green-500 text-xl sm:text-2xl" />;
-    if (estado === "ocupado")
+    if (estado === "arriendo")
       return <FaTimesCircle className="text-red-500 text-xl sm:text-2xl" />;
     if (estado === "mantencion")
       return <FaTools className="text-yellow-500 text-xl sm:text-2xl" />;
