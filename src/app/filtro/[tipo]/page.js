@@ -191,7 +191,7 @@ export default function FiltroPorTipoPage({ params }) {
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-green-600">
-                  Disponible
+                  Disponible para arriendo
                 </h2>
                 <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
                   {calculateTotal(filteredItems.disponible)} disponibles
@@ -205,7 +205,7 @@ export default function FiltroPorTipoPage({ params }) {
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-yellow-600">
-                  Mantención
+                  Mantención para arriendo
                 </h2>
                 <span className="bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
                   {calculateTotal(filteredItems.mantencion)} en mantención
