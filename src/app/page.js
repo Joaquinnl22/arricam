@@ -101,13 +101,13 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-red-500">
-              {occupiedCount}
+            <div className="text-2xl font-extrabold text-yellow-500">
+              {maintenanceCount}
             </div>
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-yellow-500">
-              {maintenanceCount}
+            <div className="text-2xl font-extrabold text-red-500">
+              {occupiedCount}
             </div>
           </div>
           <div>
@@ -189,7 +189,7 @@ export default function Home() {
             <div className="text-2xl font-extrabold text-green-600">{globalAvailable}</div>
           </div>
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Arriend  </h3>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-600">Arriendado </h3>
             <div className="text-2xl font-extrabold text-red-500">{globalOccupied}</div>
           </div>
           <div>
@@ -203,8 +203,8 @@ export default function Home() {
         <div className="grid grid-cols-5 gap-4 w-full text-center">
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Items</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Disponible para arriendo</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Arriendo</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención para</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Mantención para arriendo</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">Arrendados</h3>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">Stock</h3>
         </div>
       </div>

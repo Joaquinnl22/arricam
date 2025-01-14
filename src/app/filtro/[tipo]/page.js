@@ -112,7 +112,7 @@ export default function FiltroPorTipoPage({ params }) {
       />
     ));
   };
-
+  
   const capitalizeFirstLetter = (string) =>
     string.charAt(0).toUpperCase() + string.slice(1);
 
@@ -219,7 +219,7 @@ export default function FiltroPorTipoPage({ params }) {
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-red-600">
-                  Arriendo
+                  Arrendados
                 </h2>
                 <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
                   {calculateTotal(filteredItems.arriendo)} arriendos
