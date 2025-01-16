@@ -81,7 +81,7 @@ export default function Home() {
   const renderBlock = (type, items, Icon) => {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
-    const occupiedCount = calculateStateCounts(items, "Arriendo");
+    const occupiedCount = calculateStateCounts(items, "arriendo");
 
     return (
       <div
