@@ -37,7 +37,8 @@ export default function FiltroPorTipoPage({ params }) {
     setLoading(true); // Start loading
     try {
       const response = await fetch("/api/getItems");
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setItems(data); // Update items
     } catch (error) {
@@ -112,7 +113,7 @@ export default function FiltroPorTipoPage({ params }) {
       />
     ));
   };
-  
+
   const capitalizeFirstLetter = (string) =>
     string.charAt(0).toUpperCase() + string.slice(1);
 
@@ -183,9 +184,19 @@ export default function FiltroPorTipoPage({ params }) {
         </div>
       ) : (
         <>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 my-6">
-            {capitalizeFirstLetter(decodedTipo)}s
-          </h1>
+          <div className="relative mb-6 mt-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center">
+              {capitalizeFirstLetter(decodedTipo)}s
+            </h1>
+            <div className="absolute right-0 top-0 text-blue-600 text-xl sm:text-2xl font-bold">
+              <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg shadow">
+                Stock total:{" "}
+                {calculateTotal(filteredItems.disponible) +
+                  calculateTotal(filteredItems.mantencion) +
+                  calculateTotal(filteredItems.arriendo)}
+              </span>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
