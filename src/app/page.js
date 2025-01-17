@@ -245,6 +245,7 @@ export default function Home() {
                 Stock Total
               </h3>
             </div>
+            
           </div>
           <div className="grid grid-rows-8 gap-4">
             {renderBlock("Baños", items.baños, FaToilet)}
