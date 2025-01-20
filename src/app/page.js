@@ -81,48 +81,39 @@ export default function Home() {
       );
     }, 0);
   };
-
   const renderBlock = (type, items, Icon) => {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
     const occupiedCount = calculateStateCounts(items, "arriendo");
-
+  
     return (
-      <div
-        key={type}
-        className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center"
-      >
-        <div className="grid grid-cols-5 gap-4 w-full text-center">
-          <div className="flex space-x-3 mx-4">
-            <Icon className="h-8 w-8 text-gray-700" />
-            <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-              {type}
-            </h3>
-          </div>
-          <div>
-            <div className="text-2xl font-extrabold text-green-600">
+      <div key={type} className="">
+        <div className="bg-white rounded-xl shadow-md p-3">
+          <div className="grid grid-cols-5 gap-2">
+            <div className="flex items-center justify-center mb-2">
+              <Icon className="h-8 w-8 text-gray-700 mr-1" />
+              <h3 className="text-sm sm:text-lg font-bold text-gray-800">{type}</h3>
+            </div>
+            {/* Números destacados */}
+            <div className="bg-green-100 rounded-lg p-1 shadow text-green-600 font-extrabold text-3xl sm:text-4xl text-center border-2 border-green-600">
               {availableCount}
             </div>
-          </div>
-          <div>
-            <div className="text-2xl font-extrabold text-yellow-500">
+            <div className="bg-yellow-100 rounded-lg p-1 shadow text-yellow-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-yellow-500">
               {maintenanceCount}
             </div>
-          </div>
-          <div>
-            <div className="text-2xl font-extrabold text-red-500">
+            <div className="bg-red-100 rounded-lg p-1 shadow text-red-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-red-500">
               {occupiedCount}
             </div>
-          </div>
-          <div>
-            <div className="text-2xl font-extrabold text-blue-500">
-              {occupiedCount + maintenanceCount + availableCount}
+            <div className="bg-blue-100 rounded-lg p-1 shadow text-blue-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-blue-500">
+              {availableCount + maintenanceCount + occupiedCount}
             </div>
           </div>
         </div>
       </div>
     );
   };
+  
+  
 
   const globalAvailable = Object.values(items).reduce((total, itemGroup) => {
     return (
@@ -227,8 +218,8 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
-            <div className="grid grid-cols-5 gap-4 w-full text-center">
+          <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+            <div className="grid grid-cols-5 gap-4 items-center text-center">
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                 Items
               </h3>
@@ -236,7 +227,7 @@ export default function Home() {
                 Disponible para arriendo
               </h3>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-                EN Mantención
+                En Mantención
               </h3>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                 Arrendados
@@ -245,7 +236,6 @@ export default function Home() {
                 Stock Total
               </h3>
             </div>
-            
           </div>
           <div className="grid grid-rows-8 gap-4">
             {renderBlock("Baños", items.baños, FaToilet)}
