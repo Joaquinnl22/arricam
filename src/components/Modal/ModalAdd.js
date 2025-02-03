@@ -7,7 +7,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
     descripcion: "",
     cantidad: 1,
     estado: "disponible",
-    imagen: null, // Agregado para la imagen
+    imagen: null,
   });
 
   const handleInputChange = (e) => {
@@ -22,39 +22,38 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
     const file = e.target.files[0];
     setFormData((prevData) => ({
       ...prevData,
-      imagen: file, // Guardar la imagen seleccionada
+      imagen: file,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData); // Pasar el formulario al manejador
+    onSave(formData);
 
-    // Limpiar el formulario después de guardar
     setFormData({
       tipo: "",
       title: "",
       descripcion: "",
       cantidad: 1,
       estado: "disponible",
-      imagen: null, // Limpiar la imagen
+      imagen: null,
     });
 
-    onClose(); // Cerrar el modal
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 sm:p-8">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md text-gray-800">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-center">
           Agregar Ítem
         </h2>
         <form onSubmit={handleSubmit}>
           {/* Tipo */}
           <div className="mb-4">
-            <label htmlFor="tipo" className="block text-sm font-medium">
+            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">
               Tipo
             </label>
             <select
@@ -62,7 +61,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               name="tipo"
               value={formData.tipo}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded bg-white"
+              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
               required
             >
               <option value="" disabled>
@@ -76,13 +75,13 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               <option value="comedor">Comedores</option>
               <option value="camarin">Camarines</option>
               <option value="guardia">Guardias</option>
-              <option value= "reef">Reef</option>
+              <option value="reef">Reef</option>
             </select>
           </div>
 
           {/* Nombre */}
           <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
               Nombre
             </label>
             <input
@@ -91,14 +90,14 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               name="title"
               value={formData.title}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded text-gray-800"
               required
             />
           </div>
 
           {/* Descripción */}
           <div className="mb-4">
-            <label htmlFor="descripcion" className="block text-sm font-medium">
+            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
               Descripción
             </label>
             <textarea
@@ -106,7 +105,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               name="descripcion"
               value={formData.descripcion}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded resize-none"
+              className="w-full p-2 border border-gray-300 rounded resize-none text-gray-800"
               rows="3"
               required
             ></textarea>
@@ -114,7 +113,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Cantidad */}
           <div className="mb-4">
-            <label htmlFor="cantidad" className="block text-sm font-medium">
+            <label htmlFor="cantidad" className="block text-sm font-medium text-gray-700">
               Cantidad
             </label>
             <input
@@ -124,14 +123,14 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               value={formData.cantidad}
               onChange={handleInputChange}
               min="1"
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded text-gray-800"
               required
             />
           </div>
 
           {/* Estado */}
           <div className="mb-4">
-            <label htmlFor="estado" className="block text-sm font-medium">
+            <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
               Estado
             </label>
             <select
@@ -139,7 +138,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               name="estado"
               value={formData.estado}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded bg-white"
+              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-800"
               required
             >
               <option value="" disabled>
@@ -153,7 +152,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
 
           {/* Imagen */}
           <div className="mb-4">
-            <label htmlFor="imagen" className="block text-sm font-medium">
+            <label htmlFor="imagen" className="block text-sm font-medium text-gray-700">
               Imagen
             </label>
             <input
@@ -162,7 +161,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
               name="imagen"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded text-gray-800"
             />
           </div>
 

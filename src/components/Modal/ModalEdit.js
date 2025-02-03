@@ -13,6 +13,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     cantidad: 1,
     imagen: null,
   });
+
   const [error, setError] = useState("");
   const estadosPosibles = ["disponible", "arriendo", "mantencion"];
 
@@ -43,7 +44,6 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       return;
     }
     onSave(formData);
-    console.log("Data sent to server:", formData);
     onClose();
   };
 
@@ -60,7 +60,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-lg">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-lg text-gray-800">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">Editar Ítem</h2>
 
         {/* Imagen */}
@@ -99,7 +99,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         {/* Selección de nuevo estado */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="nuevoEstado" className="block text-sm font-medium">
+            <label htmlFor="nuevoEstado" className="block text-sm font-medium text-gray-700">
               Nuevo Estado:
             </label>
             <div className="flex flex-wrap gap-4 mt-2">
@@ -130,7 +130,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
 
           {/* Cantidad */}
           <div className="mb-4">
-            <label htmlFor="cantidad" className="block text-sm font-medium">
+            <label htmlFor="cantidad" className="block text-sm font-medium text-gray-700">
               Cantidad
             </label>
             <input
@@ -153,7 +153,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
                 }));
               }}
               min="1"
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded text-gray-800"
               required
             />
             <small className="text-gray-500">
