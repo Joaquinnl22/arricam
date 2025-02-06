@@ -1,7 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import { FaCheckCircle, FaTimesCircle, FaTools } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -11,11 +10,11 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     estado: "",
     nuevoEstado: "",
     cantidad: 1,
-    imagen: null,
+    imagenes: [],
   });
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [error, setError] = useState("");
-  const estadosPosibles = ["disponible", "arriendo", "mantencion"];
 
   useEffect(() => {
     if (item) {
@@ -26,34 +25,40 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         estado: item.estado,
         nuevoEstado: "",
         cantidad: 1,
-        imagen: item.imagen,
+        imagenes: item.imagenes || [],
       });
     }
   }, [item]);
 
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === formData.imagenes.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? formData.imagenes.length - 1 : prevIndex - 1
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!formData.nuevoEstado) {
       setError("Por favor selecciona un nuevo estado.");
       return;
     }
+
     if (formData.cantidad > item.cantidad) {
       setError(
         `La cantidad ingresada (${formData.cantidad}) excede la disponible (${item.cantidad}).`
       );
       return;
     }
+
     onSave(formData);
     onClose();
-  };
-
-  const renderEstadoIcon = (estado) => {
-    if (estado === "disponible")
-      return <FaCheckCircle className="text-green-500 text-xl sm:text-2xl" />;
-    if (estado === "arriendo")
-      return <FaTimesCircle className="text-red-500 text-xl sm:text-2xl" />;
-    if (estado === "mantencion")
-      return <FaTools className="text-yellow-500 text-xl sm:text-2xl" />;
   };
 
   if (!isOpen) return null;
@@ -63,47 +68,43 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-lg text-gray-800">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">Editar Ítem</h2>
 
-        {/* Imagen */}
-        <div className="mb-4">
-          {formData.imagen ? (
-            <div className="flex items-center justify-center w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+        {/* Carrusel de imágenes */}
+        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-4">
+          {formData.imagenes.length > 0 ? (
+            <>
               <img
-                src={formData.imagen}
+                src={formData.imagenes[currentImageIndex]}
                 alt={formData.title}
                 className="object-cover w-full h-full"
               />
-            </div>
+              <button
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-lg hover:bg-gray-200"
+                onClick={handlePrevImage}
+              >
+                <FaArrowLeft />
+              </button>
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-lg hover:bg-gray-200"
+                onClick={handleNextImage}
+              >
+                <FaArrowRight />
+              </button>
+            </>
           ) : (
-            <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-lg">
+            <div className="flex items-center justify-center w-full h-full">
               <p className="text-gray-500">Sin imagen disponible</p>
             </div>
           )}
         </div>
 
-        {/* Información del ítem */}
-        <div className="mb-4">
-          <div>
-            <strong>Tipo:</strong> {formData.tipo}
-          </div>
-          <div>
-            <strong>Título:</strong> {formData.title}
-          </div>
-          <div>
-            <strong>Descripción:</strong> {formData.descripcion}
-          </div>
-          <div>
-            <strong>Estado Actual:</strong> {formData.estado}
-          </div>
-        </div>
-
-        {/* Selección de nuevo estado */}
+        {/* Formulario */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="nuevoEstado" className="block text-sm font-medium text-gray-700">
               Nuevo Estado:
             </label>
             <div className="flex flex-wrap gap-4 mt-2">
-              {estadosPosibles
+              {["disponible", "arriendo", "mantencion"]
                 .filter((estado) => estado !== formData.estado)
                 .map((estado) => (
                   <button
@@ -121,7 +122,6 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
                         : "bg-gray-100 border-gray-300"
                     }`}
                   >
-                    {renderEstadoIcon(estado)}
                     <span className="ml-2 capitalize">{estado}</span>
                   </button>
                 ))}

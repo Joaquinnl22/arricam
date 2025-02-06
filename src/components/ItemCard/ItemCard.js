@@ -1,5 +1,7 @@
+"use client";
+
 export default function ItemCard({ item, onEdit, onDelete }) {
-  const { title, descripcion, estado, cantidad, imagen } = item;
+  const { title, descripcion, estado, cantidad, imagenes } = item;
 
   return (
     <div
@@ -7,9 +9,9 @@ export default function ItemCard({ item, onEdit, onDelete }) {
       onClick={() => onEdit && onEdit(item)} // Call onEdit
     >
       {/* Imagen o marcador de "Sin imagen" */}
-      {imagen ? (
+      {imagenes && imagenes.length > 0 ? (
         <img
-          src={imagen}
+          src={imagenes[0]} // Primera imagen del arreglo
           alt={title || "Imagen"}
           className="w-full h-40 object-cover rounded-md mb-4"
         />
@@ -19,44 +21,35 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         </div>
       )}
 
-      {/* Título */}
       <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 truncate">
         {title || "Sin título"}
       </h3>
 
-      {/* Descripción */}
       <p className="text-gray-600 text-sm sm:text-base mb-2 line-clamp-2">
         {descripcion || "Sin descripción"}
       </p>
 
-      {/* Estado */}
       <span
         className={`text-sm font-medium mb-2 ${
           estado === "disponible"
             ? "text-green-600"
-               : estado === "arriendo"
+            : estado === "arriendo"
             ? "text-red-600"
             : "text-orange-600"
         }`}
       >
-        {estado === "disponible"
-          ? "Disponible"
-          : estado === "arriendo"
-          ? "arriendo"
-          : "Mantención"}
+        {estado}
       </span>
 
-      {/* Cantidad */}
       <p className="text-gray-700 text-sm sm:text-base mt-auto">
         <strong>Cantidad:</strong> {cantidad || 0}
       </p>
 
-      {/* Botón Eliminar */}
       {onDelete && (
         <button
           onClick={(e) => {
             e.stopPropagation(); // Prevent parent click event
-            onDelete(item); // Call onDelete
+            onDelete(item);
           }}
           className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition-all"
         >
@@ -66,4 +59,3 @@ export default function ItemCard({ item, onEdit, onDelete }) {
     </div>
   );
 }
-

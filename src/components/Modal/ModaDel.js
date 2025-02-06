@@ -19,9 +19,10 @@ const ModalDel = ({ isOpen, item, onClose, onDelete }) => {
         `La cantidad a eliminar excede la disponible (${item.cantidad}).`
       );
     } else {
-      onDelete(item._id, -cantidad);
+      onDelete(item._id, cantidad); // Enviar cantidad positiva
     }
   };
+  
 
   if (!isOpen) return null;
 

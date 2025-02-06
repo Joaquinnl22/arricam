@@ -25,12 +25,14 @@ export default function FiltroPorTipoPage({ params }) {
   const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
 
-  const normalize = (str) =>
-    str
+  const normalize = (str) => {
+    if (!str) return ""; // Si str es null o undefined, retorna una cadena vacía
+    return str
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
-
+  };
+  
   const decodedTipo = decodeURIComponent(tipo);
 
   const fetchItems = async () => {
@@ -50,9 +52,9 @@ export default function FiltroPorTipoPage({ params }) {
 
   const groupItemsByTipo = (items) => {
     const filteredByTipo = decodedTipo
-      ? items.filter((item) => normalize(item.tipo) === normalize(decodedTipo))
-      : items;
-
+    ? items.filter((item) => normalize(item.tipo || "") === normalize(decodedTipo))
+    : items;
+  
     setFilteredItems({
       disponible: filteredByTipo.filter((item) => item.estado === "disponible"),
       mantencion: filteredByTipo.filter((item) => item.estado === "mantencion"),
@@ -82,23 +84,23 @@ export default function FiltroPorTipoPage({ params }) {
     setIsDeleteOpen(true);
   };
   const handleCloseDelete = () => setIsDeleteOpen(false);
-
-  const handleDeleteItem = async (id, cantidad) => {
+  const handleDeleteItem = async (id, cantidadEliminar) => {
     try {
       const response = await fetch(`/api/deleteItem`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, cantidad }),
+        body: JSON.stringify({ id, cantidadEliminar }), // Cambiado a cantidadEliminar
       });
-
+  
       if (!response.ok) throw new Error("Failed to delete item");
-
+  
       await fetchItems(); // Refresca los ítems después de eliminar
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
   };
+  
 
   const renderItems = (itemsArray) => {
     if (!itemsArray || itemsArray.length === 0) {
@@ -127,26 +129,22 @@ export default function FiltroPorTipoPage({ params }) {
       <ModalAgregar
         isOpen={isAgregarOpen}
         onClose={handleCloseAgregar}
-        onSave={async (data) => {
+        onSave={async (formData) => { // formData ya es un FormData válido
           try {
-            const formData = new FormData();
-            for (const key in data) {
-              formData.append(key, data[key]);
-            }
-
             const response = await fetch("/api/addItem", {
               method: "POST",
-              body: formData,
+              body: formData, // ✅ Enviar directamente sin modificarlo
             });
-
+        
             if (!response.ok) throw new Error("Failed to add item");
-
+        
             await fetchItems(); // Refresca los ítems después de agregar
             handleCloseAgregar();
           } catch (error) {
             console.error(error);
           }
         }}
+        
       />
 
       <ModalEditar

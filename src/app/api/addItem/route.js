@@ -24,21 +24,26 @@ export async function POST(req) {
     };
 
     // Subir la imagen si existe
-    const file = form.get("imagen"); // Clave del archivo en FormData
-    if (file && file.size > 0) {
-      const buffer = await file.arrayBuffer();
-      const result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "items" },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        stream.end(Buffer.from(buffer));
-      });
-      data.imagen = result.secure_url; // Guardar enlace de la imagen
+    const files = form.getAll("imagenes"); // Obtener todas las imágenes
+    data.imagenes = [];
+    
+    for (const file of files) {
+      if (file && file.size > 0) {
+        const buffer = await file.arrayBuffer();
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "items" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          stream.end(Buffer.from(buffer));
+        });
+        data.imagenes.push(result.secure_url);
+      }
     }
+    
 
     // Crear y guardar el nuevo ítem
     delete mongoose.models.Item;
@@ -48,8 +53,9 @@ export async function POST(req) {
       descripcion: String,
       estado: String,
       cantidad: { type: Number, default: 1 },
-      imagen: { type: String, required: false },
+      imagenes: [{ type: String, required: false }],
     });
+    
     const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
 
     const newItem = new Item(data);

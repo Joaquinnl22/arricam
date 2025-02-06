@@ -19,28 +19,44 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files); 
     setFormData((prevData) => ({
       ...prevData,
-      imagen: file,
+      imagenes: files,
     }));
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
-
+    
+    const formDataToSend = new FormData();
+    
+    Object.keys(formData).forEach((key) => {
+      if (key === "imagenes") {
+        formData[key]?.forEach((file) => formDataToSend.append("imagenes", file));
+      } else {
+        formDataToSend.append(key, formData[key]);
+      }
+    });
+  
+    onSave(formDataToSend);
+  
+    // ✅ Reiniciar formulario después de guardar
     setFormData({
       tipo: "",
       title: "",
       descripcion: "",
       cantidad: 1,
       estado: "disponible",
-      imagen: null,
+      imagenes: [], // Vaciar imágenes
     });
-
-    onClose();
+  
+    // ✅ Opcional: Limpiar input de archivos manualmente
+    document.getElementById("imagenes").value = null;
   };
+  
+  
 
   if (!isOpen) return null;
 
@@ -155,14 +171,17 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
             <label htmlFor="imagen" className="block text-sm font-medium text-gray-700">
               Imagen
             </label>
+            {/* Campo para subir múltiples imágenes */}
             <input
               type="file"
-              id="imagen"
-              name="imagen"
+              id="imagenes"
+              name="imagenes"
               accept="image/*"
+              multiple
               onChange={handleFileChange}
               className="w-full p-2 border border-gray-300 rounded text-gray-800"
             />
+
           </div>
 
           {/* Botones */}
