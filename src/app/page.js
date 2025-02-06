@@ -85,14 +85,16 @@ export default function Home() {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
     const occupiedCount = calculateStateCounts(items, "arriendo");
-  
+
     return (
       <div key={type} className="">
         <div className="bg-white rounded-xl shadow-md p-3">
           <div className="grid grid-cols-5 gap-2">
             <div className="flex items-center justify-center mb-2">
               <Icon className="h-8 w-8 text-gray-700 mr-1" />
-              <h3 className="text-sm sm:text-lg font-bold text-gray-800">{type}</h3>
+              <h3 className="text-sm sm:text-lg font-bold text-gray-800">
+                {type}
+              </h3>
             </div>
             {/* Números destacados */}
             <div className="bg-green-100 rounded-lg p-1 shadow text-green-600 font-extrabold text-3xl sm:text-4xl text-center border-2 border-green-600">
@@ -112,8 +114,6 @@ export default function Home() {
       </div>
     );
   };
-  
-  
 
   const globalAvailable = Object.values(items).reduce((total, itemGroup) => {
     return (
@@ -153,28 +153,17 @@ export default function Home() {
           <ModalAgregar
             isOpen={isAgregarOpen}
             onClose={handleCloseAgregar}
-            onSave={async (data) => {
+            onSave={async (formData) => {
+              // formData ya es un FormData válido
               try {
-                const formData = new FormData();
-                for (const key in data) {
-                  formData.append(key, data[key]);
-                }
-
                 const response = await fetch("/api/addItem", {
                   method: "POST",
-                  body: formData,
+                  body: formData, // ✅ Enviar directamente sin modificarlo
                 });
 
                 if (!response.ok) throw new Error("Failed to add item");
 
-                const result = await response.json();
-                const newItem = result.data;
-
-                setItems((prev) => ({
-                  ...prev,
-                  [newItem.tipo]: [...(prev[newItem.tipo] || []), newItem],
-                }));
-
+                await fetchItems(); // Refresca los ítems después de agregar
                 handleCloseAgregar();
               } catch (error) {
                 console.error(error);
