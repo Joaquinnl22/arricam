@@ -227,14 +227,14 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-rows-8 gap-4">
-            {renderBlock("Baños", items.baños, FaToilet)}
-            {renderBlock("BOD20", items.BOD20, FaWarehouse)}
-            {renderBlock("BOD40", items.BOD40, FaWarehouse)}
             {renderBlock("Oficinas", items.oficinas, FaBuilding)}
             {renderBlock("Oficinas con baño", items.oficinasconbaño, ImOffice)}
+            {renderBlock("Baños", items.baños, FaToilet)}
             {renderBlock("Comedores", items.comedores, FaUtensils)}
             {renderBlock("Camarines", items.camarines, FaUsers)}
             {renderBlock("Guardias", items.guardias, FaShieldAlt)}
+            {renderBlock("BOD20", items.BOD20, FaWarehouse)}
+            {renderBlock("BOD40", items.BOD40, FaWarehouse)}
             {renderBlock("Reef", items.reef, PiShippingContainerFill)}
           </div>
         </>
