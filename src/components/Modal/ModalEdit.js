@@ -96,6 +96,27 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
             </div>
           )}
         </div>
+        {/* Desccripcion */}
+        <div className="mb-4">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          Nombre:  
+          </label>
+        <div className="block"> 
+        {formData.title}
+        </div>
+
+
+
+       
+          <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
+            Descripción:  
+          </label>
+            {formData.descripcion}
+
+  
+
+
+        </div>
 
         {/* Formulario */}
         <form onSubmit={handleSubmit}>
