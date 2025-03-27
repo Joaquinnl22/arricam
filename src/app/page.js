@@ -30,6 +30,21 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState("");
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const handleCloseAgregar = () => setIsAgregarOpen(false);
+  const [currentDate, setCurrentDate] = useState("");
+
+  useEffect(() => {
+    fetchItems();
+
+    // Establecer la fecha actual
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    setCurrentDate(formattedDate);
+  }, []);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -171,9 +186,14 @@ export default function Home() {
             }}
           />
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-gray-800 my-6">
-            Stock de los container
-          </h1>
+          <div className="relative">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-center text-gray-800 my-6">
+              Stock de los container
+            </h1>
+            <div className="absolute top-0 right-0 text-gray-600 text-sm sm:text-base font-semibold">
+              {currentDate}
+            </div>
+          </div>
 
           {/* Resumen Global */}
           <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
