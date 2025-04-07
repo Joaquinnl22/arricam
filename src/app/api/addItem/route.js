@@ -2,7 +2,6 @@ import { v2 as cloudinary } from "cloudinary";
 import connectToDatabase from "@/lib/mongodb";
 import mongoose from "mongoose";
 
-// Configurar Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -13,20 +12,19 @@ export async function POST(req) {
   try {
     await connectToDatabase();
 
-    // Leer datos del cuerpo de la solicitud
-    const form = await req.formData(); // Next.js permite manejar FormData
+    const form = await req.formData();
     const data = {
       tipo: form.get("tipo"),
       title: form.get("title"),
       descripcion: form.get("descripcion"),
       estado: form.get("estado"),
       cantidad: Number(form.get("cantidad")),
+      arrendadoPor: form.get("arrendadoPor") || null, // Añadido
     };
 
-    // Subir la imagen si existe
-    const files = form.getAll("imagenes"); // Obtener todas las imágenes
+    const files = form.getAll("imagenes");
     data.imagenes = [];
-    
+
     for (const file of files) {
       if (file && file.size > 0) {
         const buffer = await file.arrayBuffer();
@@ -43,9 +41,7 @@ export async function POST(req) {
         data.imagenes.push(result.secure_url);
       }
     }
-    
 
-    // Crear y guardar el nuevo ítem
     delete mongoose.models.Item;
     const ItemSchema = new mongoose.Schema({
       tipo: String,
@@ -54,10 +50,10 @@ export async function POST(req) {
       estado: String,
       cantidad: { type: Number, default: 1 },
       imagenes: [{ type: String, required: false }],
+      arrendadoPor: { type: String, default: null }, // Añadido al esquema
     });
-    
-    const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
 
+    const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
     const newItem = new Item(data);
     await newItem.save();
 
@@ -77,4 +73,4 @@ export async function POST(req) {
       }
     );
   }
-}
+} 

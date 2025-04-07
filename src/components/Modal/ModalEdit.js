@@ -11,6 +11,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     nuevoEstado: "",
     cantidad: 1,
     imagenes: [],
+    arrendadoPor: "", // Nuevo campo
   });
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -26,6 +27,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         nuevoEstado: "",
         cantidad: 1,
         imagenes: item.imagenes || [],
+        arrendadoPor: "", // Inicializamos vacío
       });
     }
   }, [item]);
@@ -54,6 +56,11 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       setError(
         `La cantidad ingresada (${formData.cantidad}) excede la disponible (${item.cantidad}).`
       );
+      return;
+    }
+
+    if (formData.nuevoEstado === "arriendo" && !formData.arrendadoPor.trim()) {
+      setError("Debes ingresar el nombre de la persona que arrienda.");
       return;
     }
 
@@ -96,34 +103,20 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
             </div>
           )}
         </div>
-        {/* Desccripcion */}
+
+        {/* Descripción */}
         <div className="mb-4">
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Nombre:  
-          </label>
-        <div className="block"> 
-        {formData.title}
-        </div>
+          <label className="block text-sm font-medium text-gray-700">Nombre:</label>
+          <div className="block">{formData.title}</div>
 
-
-
-       
-          <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
-            Descripción:  
-          </label>
-            {formData.descripcion}
-
-  
-
-
+          <label className="block text-sm font-medium text-gray-700 mt-2">Descripción:</label>
+          <div className="block">{formData.descripcion}</div>
         </div>
 
         {/* Formulario */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="nuevoEstado" className="block text-sm font-medium text-gray-700">
-              Nuevo Estado:
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Nuevo Estado:</label>
             <div className="flex flex-wrap gap-4 mt-2">
               {["disponible", "arriendo", "mantencion"]
                 .filter((estado) => estado !== formData.estado)
@@ -135,6 +128,7 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
                       setFormData((prevData) => ({
                         ...prevData,
                         nuevoEstado: estado,
+                        arrendadoPor: estado === "arriendo" ? "" : prevData.arrendadoPor,
                       }))
                     }
                     className={`flex items-center px-4 py-2 border rounded-lg ${
@@ -148,6 +142,29 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
                 ))}
             </div>
           </div>
+
+          {/* Campo de arrendadoPor (solo si el nuevo estado es "arriendo") */}
+          {formData.nuevoEstado === "arriendo" && (
+            <div className="mb-4">
+              <label htmlFor="arrendadoPor" className="block text-sm font-medium text-gray-700">
+                Arrendado por:
+              </label>
+              <input
+                type="text"
+                id="arrendadoPor"
+                name="arrendadoPor"
+                value={formData.arrendadoPor}
+                onChange={(e) =>
+                  setFormData((prevData) => ({
+                    ...prevData,
+                    arrendadoPor: e.target.value,
+                  }))
+                }
+                className="w-full p-2 border border-gray-300 rounded text-gray-800"
+                required
+              />
+            </div>
+          )}
 
           {/* Cantidad */}
           <div className="mb-4">

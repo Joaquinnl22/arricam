@@ -13,6 +13,7 @@ export async function GET(req) {
       estado: String,
       cantidad: { type: Number, default: 1 },
       imagen: { type: String, required: false },
+      arrendadoPor: { type: String, default: "NaN" }, // Nuevo campo con valor por defecto
     });
 
     const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
@@ -20,8 +21,14 @@ export async function GET(req) {
     // Obtener todos los items de la base de datos
     const items = await Item.find();
 
+    // Asegurar que todos los ítems tengan "arrendadoPor" y poner "NaN" si no lo tienen
+    const updatedItems = items.map((item) => ({
+      ...item.toObject(),
+      arrendadoPor: item.arrendadoPor || "NaN",
+    }));
+
     // Retornar los items
-    return new Response(JSON.stringify(items), {
+    return new Response(JSON.stringify(updatedItems), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

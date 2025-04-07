@@ -32,7 +32,7 @@ export default function FiltroPorTipoPage({ params }) {
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
   };
-  
+
   const decodedTipo = decodeURIComponent(tipo);
 
   const fetchItems = async () => {
@@ -52,9 +52,11 @@ export default function FiltroPorTipoPage({ params }) {
 
   const groupItemsByTipo = (items) => {
     const filteredByTipo = decodedTipo
-    ? items.filter((item) => normalize(item.tipo || "") === normalize(decodedTipo))
-    : items;
-  
+      ? items.filter(
+          (item) => normalize(item.tipo || "") === normalize(decodedTipo)
+        )
+      : items;
+
     setFilteredItems({
       disponible: filteredByTipo.filter((item) => item.estado === "disponible"),
       mantencion: filteredByTipo.filter((item) => item.estado === "mantencion"),
@@ -91,28 +93,33 @@ export default function FiltroPorTipoPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, cantidadEliminar }), // Cambiado a cantidadEliminar
       });
-  
+
       if (!response.ok) throw new Error("Failed to delete item");
-  
+
       await fetchItems(); // Refresca los ítems después de eliminar
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
   };
-  
 
-  const renderItems = (itemsArray) => {
+  const renderItems = (itemsArray, showArrendadoPor = false) => {
     if (!itemsArray || itemsArray.length === 0) {
       return <p className="text-center text-gray-500">No hay ítems.</p>;
     }
     return itemsArray.map((item) => (
-      <ItemCard
-        key={item._id}
-        item={item}
-        onEdit={handleOpenEditar}
-        onDelete={handleOpenDelete}
-      />
+      <div key={item._id} className="bg-gray-50 p-4 rounded-lg shadow">
+        <ItemCard
+          item={item}
+          onEdit={handleOpenEditar}
+          onDelete={handleOpenDelete}
+        />
+        {showArrendadoPor && (
+          <p className="text-sm text-gray-600 mt-2">
+            <strong>Arrendado por:</strong> {item.arrendadoPor || "NaN"}
+          </p>
+        )}
+      </div>
     ));
   };
 
@@ -129,22 +136,22 @@ export default function FiltroPorTipoPage({ params }) {
       <ModalAgregar
         isOpen={isAgregarOpen}
         onClose={handleCloseAgregar}
-        onSave={async (formData) => { // formData ya es un FormData válido
+        onSave={async (formData) => {
+          // formData ya es un FormData válido
           try {
             const response = await fetch("/api/addItem", {
               method: "POST",
               body: formData, // ✅ Enviar directamente sin modificarlo
             });
-        
+
             if (!response.ok) throw new Error("Failed to add item");
-        
+
             await fetchItems(); // Refresca los ítems después de agregar
             handleCloseAgregar();
           } catch (error) {
             console.error(error);
           }
         }}
-        
       />
 
       <ModalEditar
@@ -235,7 +242,7 @@ export default function FiltroPorTipoPage({ params }) {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderItems(filteredItems.arriendo)}
+                {renderItems(filteredItems.arriendo, true)}
               </div>
             </div>
           </div>

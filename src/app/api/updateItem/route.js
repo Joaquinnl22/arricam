@@ -18,6 +18,7 @@ if (!mongoose.models.Item) {
     estado: { type: String, required: true },
     cantidad: { type: Number, default: 1, required: true },
     imagenes: [{ type: String }],
+    arrendadoPor: { type: String, default: null }, // Nuevo campo
   });
 
   mongoose.model("Item", ItemSchema);
@@ -29,17 +30,14 @@ export async function PUT(req) {
   try {
     await connectToDatabase();
 
-    let tipo, title, descripcion, estado, nuevoEstado, cantidadNumerica, imagenes = [];
+    let tipo, title, descripcion, estado, nuevoEstado, cantidadNumerica, arrendadoPor = null, imagenes = [];
 
-    // Detectar si la solicitud es JSON o FormData
     const contentType = req.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {
-      // Si la solicitud es JSON
       const body = await req.json();
-      ({ tipo, title, descripcion, estado, nuevoEstado, cantidad: cantidadNumerica, imagenes } = body);
+      ({ tipo, title, descripcion, estado, nuevoEstado, cantidad: cantidadNumerica, arrendadoPor, imagenes } = body);
     } else if (contentType.includes("multipart/form-data")) {
-      // Si la solicitud es FormData
       const formData = await req.formData();
       tipo = formData.get("tipo");
       title = formData.get("title");
@@ -47,10 +45,9 @@ export async function PUT(req) {
       estado = formData.get("estado");
       nuevoEstado = formData.get("nuevoEstado");
       cantidadNumerica = Number(formData.get("cantidad"));
+      arrendadoPor = formData.get("arrendadoPor") || null;
 
       const imagenesArchivos = formData.getAll("imagenes");
-
-      // Subir imágenes a Cloudinary si existen
       for (const file of imagenesArchivos) {
         if (file && file.size > 0) {
           const buffer = Buffer.from(await file.arrayBuffer());
@@ -65,13 +62,12 @@ export async function PUT(req) {
         }
       }
     } else {
-      return new Response(
-        JSON.stringify({ message: "Formato de solicitud no soportado." }),
-        { status: 415, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ message: "Formato de solicitud no soportado." }), {
+        status: 415,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Validación de datos
     if (!tipo || !title || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica)) {
       return new Response(
         JSON.stringify({ message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido." }),
@@ -79,8 +75,6 @@ export async function PUT(req) {
       );
     }
 
-    // Buscar el ítem actual en la base de datos
-    // Buscar el ítem actual en la base de datos
     const currentItem = await Item.findOne({ tipo, title, descripcion, estado });
 
     if (!currentItem) {
@@ -90,9 +84,6 @@ export async function PUT(req) {
       );
     }
 
-    // Ahora sí podemos actualizar sus imágenes sin errores
-    currentItem.imagenes = [...new Set([...(currentItem.imagenes || []), ...(imagenes || [])])];
-
     if (cantidadNumerica > currentItem.cantidad) {
       return new Response(
         JSON.stringify({ message: "Cantidad solicitada excede la cantidad disponible." }),
@@ -100,12 +91,16 @@ export async function PUT(req) {
       );
     }
 
-    // Buscar o crear el nuevo ítem
     let targetItem = await Item.findOne({ tipo, title, descripcion, estado: nuevoEstado });
 
     if (targetItem) {
       targetItem.cantidad += cantidadNumerica;
       targetItem.imagenes = [...new Set([...targetItem.imagenes, ...imagenes])];
+
+      if (nuevoEstado === "arriendo" && arrendadoPor) {
+        targetItem.arrendadoPor = arrendadoPor;
+      }
+
       await targetItem.save();
     } else {
       targetItem = new Item({
@@ -115,11 +110,11 @@ export async function PUT(req) {
         estado: nuevoEstado,
         cantidad: cantidadNumerica,
         imagenes,
+        ...(nuevoEstado === "arriendo" && arrendadoPor ? { arrendadoPor } : {}),
       });
       await targetItem.save();
     }
 
-    // Actualizar o eliminar el ítem original
     currentItem.cantidad -= cantidadNumerica;
     if (currentItem.cantidad <= 0) {
       await currentItem.deleteOne();
