@@ -11,7 +11,7 @@ export default function ItemCard({ item, onEdit, onDelete }) {
   return (
     <div
       className="bg-white p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-200 flex flex-col"
-      onClick={() => onEdit && onEdit(item)} // Call onEdit
+      onClick={() => onEdit && onEdit(item)} 
     >
       {imagenURL ? (
         <img
