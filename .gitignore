@@ -9,7 +9,10 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+# Ignorar dependencias
 node_modules/
+
+# Ignorar binarios o archivos comprimidos
 *.tar.gz
 
 # testing
