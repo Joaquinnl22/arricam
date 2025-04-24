@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	// "github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,6 +14,12 @@ import (
 var DB *mongo.Database
 
 func ConnectDB() {
+	// // Cargar variables del archivo .env.local
+	// err := godotenv.Load(".env.local")
+
+	// if err != nil {
+	// 	log.Fatal("Error cargando .env.local:", err)
+	// }
 
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {

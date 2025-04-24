@@ -1,14 +1,13 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: '/api/items',
-        destination: 'http://localhost:8080/api/items',
+        destination: 'https://arricam.onrender.com/api/items',
       },
       {
-        source: '/api/items/cantidad',
-        destination: 'http://localhost:8080/api/items/cantidad',
+        source: '/api/items/:path*',
+        destination: 'https://arricam.onrender.com/api/items/:path*',
       },
     ];
   },

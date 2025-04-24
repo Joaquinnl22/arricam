@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	
+	// "github.com/joho/godotenv"
 	
 
 	"backend/config"
@@ -11,7 +11,10 @@ import (
 )
 
 func main() {
-
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Println("⚠️ No se pudo cargar el archivo .env, se usará el entorno actual")
+	// }
 
 	config.ConnectDB()
 	config.InitCloudinary()
