@@ -249,6 +249,9 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		Descripcion:  r.FormValue("descripcion"),
 		Estado:       r.FormValue("estado"),
 		ArrendadoPor: r.FormValue("arrendadoPor"),
+		Cantidad:     cantidad,
+		CreatedAt:    time.Now(), 
+		UpdatedAt:    time.Now(), 
 	}
 
 	cantidad, _ := strconv.Atoi(r.FormValue("cantidad"))
