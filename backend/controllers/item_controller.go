@@ -178,6 +178,15 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 	}
+	
+	// 🔥 Enviar notificaciones Push
+	subscriptions, err := controllers.GetAllSubscriptions()
+	if err == nil {
+		for _, sub := range subscriptions {
+			controllers.EnviarNotificacion(sub, "✏️ Ítem Modificado", fmt.Sprintf("%s actualizado de %s a %s con %d unidades", title, estado, nuevoEstado, cantidad))
+		}
+	}
+
 
 	// Enviar WhatsApp vía Twilio
 	body := fmt.Sprintf("✏️ Ítem modificado:\n📦 %s\n➡️ De \"%s\" a \"%s\"\n🔢 Cantidad: %d", title, estado, nuevoEstado, cantidad)
@@ -302,6 +311,14 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 🔥 Enviar notificaciones Push
+	subscriptions, err := controllers.GetAllSubscriptions()
+	if err == nil {
+		for _, sub := range subscriptions {
+			controllers.EnviarNotificacion(sub, "🆕 Nuevo Ítem Agregado", fmt.Sprintf("%s fue agregado con %d unidades", item.Title, item.Cantidad))
+		}
+	}
+
 	// Enviar WhatsApp con Twilio
 	body := fmt.Sprintf("🆕 Nuevo item agregado:\n📦 %s\n📝 %s\n📍 Estado: %s\n🔢 Cantidad: %d",
 		item.Title, item.Descripcion, item.Estado, item.Cantidad)
@@ -318,6 +335,7 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		log.Printf("✅ Mensaje enviado con SID: %s\n", *message.Sid)
 	}
 	
+
 	
 
 	w.Header().Set("Content-Type", "application/json")
