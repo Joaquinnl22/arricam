@@ -17,6 +17,10 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/items", controllers.AddItem).Methods("POST")
 	api.HandleFunc("/items", controllers.UpdateItem).Methods("PUT")
 	api.HandleFunc("/items/cantidad", controllers.DeleteItemCantidad).Methods("PUT")
+	api.HandleFunc("/items/changes", controllers.GetLastChanges).Methods("GET")
+
+
+
 
 
 	return router

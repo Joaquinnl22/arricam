@@ -14,6 +14,8 @@ import (
 	//"mime/multipart"
 	"path/filepath"
 	"net/url"
+	"encoding/csv"
+	"bytes"
 
 	"backend/config"
 	"backend/models"
@@ -24,7 +26,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 )
-
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -35,7 +36,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 
 	contentType := r.Header.Get("Content-Type")
 
-	// 1. Manejo multipart/form-data
 	if strings.Contains(contentType, "multipart/form-data") {
 		err := r.ParseMultipartForm(20 << 20) // 20 MB
 		if err != nil {
@@ -49,7 +49,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		estado = r.FormValue("estado")
 		nuevoEstado = r.FormValue("nuevoEstado")
 		arrendadoPor = r.FormValue("arrendadoPor")
-
 		cantidad, _ = strconv.Atoi(r.FormValue("cantidad"))
 
 		files := r.MultipartForm.File["imagenes"]
@@ -69,7 +68,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else if strings.Contains(contentType, "application/json") {
-		// 2. Manejo JSON
 		var body struct {
 			Tipo         string   `json:"tipo"`
 			Title        string   `json:"title"`
@@ -99,7 +97,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validación
 	if tipo == "" || title == "" || descripcion == "" || estado == "" || nuevoEstado == "" || cantidad <= 0 {
 		http.Error(w, "Faltan campos obligatorios", http.StatusBadRequest)
 		return
@@ -115,7 +112,6 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		"descripcion": descripcion,
 		"estado":      estado,
 	}).Decode(&currentItem)
-
 	if err != nil {
 		http.Error(w, "Ítem original no encontrado", http.StatusNotFound)
 		return
@@ -126,7 +122,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Buscar ítem con estado nuevo
+	// Buscar ítem con nuevo estado
 	var targetItem models.Item
 	err = collection.FindOne(ctx, bson.M{
 		"tipo":        tipo,
@@ -135,20 +131,25 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		"estado":      nuevoEstado,
 	}).Decode(&targetItem)
 
+	now := time.Now() // guardamos el tiempo actual
+
 	if err == nil {
-		// Ya existe → actualiza
+		// Ya existe → actualizar cantidad e imágenes
 		update := bson.M{
 			"$inc": bson.M{"cantidad": cantidad},
 			"$addToSet": bson.M{"imagenes": bson.M{
 				"$each": imagenes,
 			}},
+			"$set": bson.M{
+				"updatedAt": now,
+			},
 		}
 		if nuevoEstado == "arriendo" && arrendadoPor != "" {
-			update["$set"] = bson.M{"arrendadoPor": arrendadoPor}
+			update["$set"].(bson.M)["arrendadoPor"] = arrendadoPor
 		}
 		_, _ = collection.UpdateOne(ctx, bson.M{"_id": targetItem.ID}, update)
 	} else {
-		// No existe → crea nuevo
+		// No existe → crear nuevo
 		newItem := models.Item{
 			Tipo:         tipo,
 			Title:        title,
@@ -157,6 +158,8 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 			Cantidad:     cantidad,
 			Imagenes:     imagenes,
 			ArrendadoPor: arrendadoPor,
+			CreatedAt:    now,
+			UpdatedAt:    now,
 		}
 		_, _ = collection.InsertOne(ctx, newItem)
 	}
@@ -168,13 +171,14 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	} else {
 		_, _ = collection.UpdateOne(ctx, bson.M{"_id": currentItem.ID}, bson.M{
 			"$set": bson.M{
-				"cantidad": newCantidad,
-				"imagenes": append(currentItem.Imagenes, imagenes...),
+				"cantidad":  newCantidad,
+				"imagenes":  append(currentItem.Imagenes, imagenes...),
+				"updatedAt": now,
 			},
 		})
 	}
 
-	// WhatsApp via Twilio
+	// Enviar WhatsApp vía Twilio
 	body := fmt.Sprintf("✏️ Ítem modificado:\n📦 %s\n➡️ De \"%s\" a \"%s\"\n🔢 Cantidad: %d", title, estado, nuevoEstado, cantidad)
 	if nuevoEstado == "arriendo" && arrendadoPor != "" {
 		body += fmt.Sprintf("\n🙋 Arrendado por: %s", arrendadoPor)
@@ -195,6 +199,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		"message": "Ítem actualizado correctamente",
 	})
 }
+
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -285,6 +290,9 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	_, err = collection.InsertOne(ctx, item)
+	item.CreatedAt = time.Now()
+	item.UpdatedAt = time.Now()
+
 	if err != nil {
 		http.Error(w, "Error guardando item", http.StatusInternalServerError)
 		return
@@ -429,3 +437,31 @@ func eliminarImagenesDeCloudinary(urls []string) error {
 	return nil
 }
 
+func GetLastChanges(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := config.DB.Collection("items")
+
+	opts := options.Find()
+	opts.SetSort(bson.D{{"updatedAt", -1}})
+	opts.SetLimit(10)
+
+	cursor, err := collection.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		http.Error(w, "Error al obtener cambios recientes", http.StatusInternalServerError)
+		log.Println("❌ Error en Find():", err)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var changes []models.Item
+	if err := cursor.All(ctx, &changes); err != nil {
+		http.Error(w, "Error al decodificar cambios", http.StatusInternalServerError)
+		log.Println("❌ Error en cursor.All():", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(changes)
+}
