@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"envqdwd"
+	"os"
 
 	"backend/config"
 	"backend/models"
@@ -14,8 +16,7 @@ import (
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
-var vapidPublicKey = "TU_PUBLIC_KEY"
-var vapidPrivateKey = "TU_PRIVATE_KEY"
+
 
 type Subscription struct {
 	Endpoint       string `json:"endpoint"`
@@ -28,6 +29,10 @@ type Subscription struct {
 
 // Enviar notificación a una sola suscripción
 func EnviarNotificacion(subscription models.Subscription, titulo, mensaje string) {
+	
+	vapidPrivateKey := os.Getenv("VAPID_PRIVATE_KEY")
+	vapidPublicKey := os.Getenv("VAPID_PUBLIC_KEY")
+
 	sub := &webpush.Subscription{
 		Endpoint: subscription.Endpoint,
 		Keys: webpush.Keys{
