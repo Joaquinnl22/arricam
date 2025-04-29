@@ -16,6 +16,7 @@ import (
 	"net/url"
 
 
+
 	"backend/config"
 	"backend/models"
 
@@ -180,10 +181,10 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// 🔥 Enviar notificaciones Push
-	subscriptions, err := controllers.GetAllSubscriptions()
+	subscriptions, err := GetAllSubscriptions()
 	if err == nil {
 		for _, sub := range subscriptions {
-			controllers.EnviarNotificacion(sub, "✏️ Ítem Modificado", fmt.Sprintf("%s actualizado de %s a %s con %d unidades", title, estado, nuevoEstado, cantidad))
+			EnviarNotificacion(sub, "✏️ Ítem Modificado", fmt.Sprintf("%s actualizado de %s a %s con %d unidades", title, estado, nuevoEstado, cantidad))
 		}
 	}
 
@@ -251,6 +252,7 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error procesando el formulario", http.StatusBadRequest)
 		return
 	}
+	cantidad, _ := strconv.Atoi(r.FormValue("cantidad"))
 
 	item := models.Item{
 		Tipo:         r.FormValue("tipo"),
@@ -259,11 +261,10 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		Estado:       r.FormValue("estado"),
 		ArrendadoPor: r.FormValue("arrendadoPor"),
 		Cantidad:     cantidad,
-		CreatedAt:    time.Now(), 
-		UpdatedAt:    time.Now(), 
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
-
-	cantidad, _ := strconv.Atoi(r.FormValue("cantidad"))
+	
 	item.Cantidad = cantidad
 
 	// Subir imagen (si existe)
@@ -312,10 +313,10 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 🔥 Enviar notificaciones Push
-	subscriptions, err := controllers.GetAllSubscriptions()
+	subscriptions, err := GetAllSubscriptions()
 	if err == nil {
 		for _, sub := range subscriptions {
-			controllers.EnviarNotificacion(sub, "🆕 Nuevo Ítem Agregado", fmt.Sprintf("%s fue agregado con %d unidades", item.Title, item.Cantidad))
+			EnviarNotificacion(sub, "🆕 Nuevo Ítem Agregado", fmt.Sprintf("%s fue agregado con %d unidades", item.Title, item.Cantidad))
 		}
 	}
 

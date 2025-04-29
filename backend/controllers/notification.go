@@ -1,25 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"log"
-
-	webpush "github.com/SherClockHolmes/webpush-go"
-)
-
-var vapidPublicKey = "AQUI_TU_PUBLIC_KEY"
-var vapidPrivateKey = "AQUI_TU_PRIVATE_KEY"
-
-type Subscription struct {
-	Endpoint       string `json:"endpoint"`
-	ExpirationTime *int   `json:"expirationTime"`
-	Keys           struct {
-		P256dh string `json:"p256dh"`
-		Auth   string `json:"auth"`
-	} `json:"keys"`
-}package controllers
-
-import (
 	"context"
 	"encoding/json"
 	"log"
@@ -27,6 +8,8 @@ import (
 
 	"backend/config"
 	"backend/models"
+	"go.mongodb.org/mongo-driver/bson"
+	
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
