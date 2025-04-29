@@ -180,13 +180,17 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	
-	// 🔥 Enviar notificaciones Push
+
+	// 🔥 Enviar notificaciones Push después de actualizar
 	subscriptions, err := GetAllSubscriptions()
 	if err == nil {
 		for _, sub := range subscriptions {
-			EnviarNotificacion(sub, "✏️ Ítem Modificado", fmt.Sprintf("%s actualizado de %s a %s con %d unidades", title, estado, nuevoEstado, cantidad))
+			EnviarNotificacion(sub, "✏️ Ítem actualizado", fmt.Sprintf("Se modificó %s: de %s a %s con %d unidades.", title, estado, nuevoEstado, cantidad))
 		}
+	} else {
+		log.Println("⚠️ No se pudieron obtener suscripciones para notificar:", err)
 	}
+
 
 
 	// Enviar WhatsApp vía Twilio
@@ -312,13 +316,16 @@ func AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 🔥 Enviar notificaciones Push
+	// 🔥 Enviar notificaciones Push después de agregar
 	subscriptions, err := GetAllSubscriptions()
 	if err == nil {
 		for _, sub := range subscriptions {
-			EnviarNotificacion(sub, "🆕 Nuevo Ítem Agregado", fmt.Sprintf("%s fue agregado con %d unidades", item.Title, item.Cantidad))
+			EnviarNotificacion(sub, "🆕 Nuevo ítem agregado", fmt.Sprintf("%s agregado con %d unidades en estado %s.", item.Title, item.Cantidad, item.Estado))
 		}
+	} else {
+		log.Println("⚠️ No se pudieron obtener suscripciones para notificar:", err)
 	}
+
 
 	// Enviar WhatsApp con Twilio
 	body := fmt.Sprintf("🆕 Nuevo item agregado:\n📦 %s\n📝 %s\n📍 Estado: %s\n🔢 Cantidad: %d",
