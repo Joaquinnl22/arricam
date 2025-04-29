@@ -58,7 +58,7 @@ export default function NavBar({ onAddClick, onFilterChange, onBackupClick }) {
           onClick={onBackupClick}
           className="w-full sm:w-auto bg-yellow-400 hover:bg-blue-300 text-black px-4 py-2 rounded-md shadow-lg transition transform hover:scale-105"
         >
-          Ver Backups
+          Ver Historial
         </button>
       </div>
     </nav>
