@@ -1,14 +1,34 @@
 package routes
 
 import (
+	"net/http"
+	"github.com/gorilla/mux"
 	"backend/config"
 	"backend/controllers"
-
-	"github.com/gorilla/mux"
 )
+
+// ⬇️ Middleware de CORS
+func enableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") 
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Si es una solicitud preflight, respondemos de inmediato
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func SetupRoutes() *mux.Router {
 	router := mux.NewRouter()
+
+	// ⬅️ Aplica CORS
+	router.Use(enableCors)
 
 	config.ConnectDB()
 
@@ -19,12 +39,6 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/items/cantidad", controllers.DeleteItemCantidad).Methods("PUT")
 	api.HandleFunc("/items/changes", controllers.GetLastChanges).Methods("GET")
 	api.HandleFunc("/subscribe", controllers.Subscribe).Methods("POST")
-
-
-
-
-
-
 
 	return router
 }
