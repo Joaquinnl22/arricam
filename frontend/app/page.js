@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar/NavBar";
 import ModalAgregar from "../components/Modal/ModalAdd";
+import ModalBackup from "../components/Modal/ModalBackup";
 import {
   FaToilet,
   FaWarehouse,
@@ -31,6 +32,7 @@ export default function Home() {
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const handleCloseAgregar = () => setIsAgregarOpen(false);
   const [currentDate, setCurrentDate] = useState("");
+  const [mostrarBackup, setMostrarBackup] = useState(false);
 
   useEffect(() => {
     fetchItems();
@@ -163,7 +165,10 @@ export default function Home() {
           <Navbar
             onAddClick={handleOpenAgregar}
             onFilterChange={setSelectedType}
+            onBackupClick={() => setMostrarBackup(true)}
           />
+          <ModalBackup isOpen={mostrarBackup} onClose={() => setMostrarBackup(false)} />
+
 
           <ModalAgregar
             isOpen={isAgregarOpen}
