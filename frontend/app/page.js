@@ -228,40 +228,40 @@ export default function Home() {
       )}
     </div>
   );
-
-  // ✅ Lógica de notificaciones
   async function registrarServiceWorkerYNotificaciones() {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       try {
         const registration = await navigator.serviceWorker.register("/sw.js");
         console.log("✅ Service Worker registrado:", registration);
-
+  
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
           alert("Debes permitir notificaciones para recibir alertas.");
           return;
         }
-
+  
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array("BIXeUXvYxSLP2g5cWf8LgU_cqW2SzdY-s8NRr8E7tKDNPlVOEruNdzUjVR1ms0-7wUzd1Rt3Y6N3_VPAbaYzN0s"),
         });
         console.log("✅ Suscripción creada:", subscription);
-
-        await fetch("api/items/changes", {
+  
+        // 🔥 Aquí corregimos
+        await fetch("/api/subscribe", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(subscription),
         });
-
+  
         console.log("✅ Suscripción enviada al backend");
       } catch (error) {
         console.error("❌ Error en notificaciones:", error);
       }
     }
   }
+  
 
   function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);

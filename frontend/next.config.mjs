@@ -9,6 +9,10 @@ const nextConfig = {
         source: '/api/items/:path*',
         destination: 'https://arricam.onrender.com/api/items/:path*',
       },
+      {
+        source: '/api/subscribe',
+        destination: 'https://arricam.onrender.com/api/subscribe', 
+      },
     ];
   },
 };

@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 	"os"
+	"net/http"
 
 	"backend/config"
 	"backend/models"
@@ -80,4 +81,28 @@ func GetAllSubscriptions() ([]models.Subscription, error) {
 	}
 
 	return subscriptions, nil
+}
+
+
+func Subscribe(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var sub models.Subscription
+	if err := json.NewDecoder(r.Body).Decode(&sub); err != nil {
+		http.Error(w, "Error al decodificar suscripción", http.StatusBadRequest)
+		return
+	}
+
+	collection := config.DB.Collection("subscriptions")
+	_, err := collection.InsertOne(ctx, sub)
+	if err != nil {
+		http.Error(w, "Error guardando suscripción", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Suscripción guardada",
+	})
 }
