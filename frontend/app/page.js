@@ -196,17 +196,7 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="absolute top-0 right-0 text-gray-900 text-sm sm:text-base font-semibold mt-8 sm:mt-0 shadow-lg px-2 py-1 rounded-lg bg-yellow-200 border-2 border-yellow-400 ">
-              {currentDate}
-            </div>
-          </div>
-          <div className="relative mb-9">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center text-black my-6">
-              Stock de los container
-            </h1>
-            <div className="absolute top-0 right-0 text-gray-900 text-sm sm:text-base font-semibold mt-8 sm:mt-0 shadow-lg px-2 py-1 rounded-lg bg-yellow-200 border-2 border-yellow-400 ">
-              {currentDate}
-            </div>
+          
           </div>
 
           {/* Resumen Global */}
