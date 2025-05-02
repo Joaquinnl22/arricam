@@ -11,7 +11,11 @@ const nextConfig = {
       },
       {
         source: '/api/subscribe',
-        destination: 'https://arricam.onrender.com/api/subscribe', 
+        destination: 'https://arricam.onrender.com/api/subscribe',
+      },
+      {
+        source: '/api/resumenes',
+        destination: 'https://arricam.onrender.com/api/resumenes',
       },
     ];
   },
