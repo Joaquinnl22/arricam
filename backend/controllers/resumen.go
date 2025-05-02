@@ -21,14 +21,14 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 
 	var disponible, arriendo, total int64
 
-	disponible, _ = collection.CountDocuments(ctx, bson.M{"estado": "disponible"})
+	// Sumar cantidad donde estado es "disponible"
+	disponible = sumarCantidadPorEstado(ctx, collection, bson.M{"estado": "disponible"})
 
-	// Contar "arriendo" y "ocupado" como arriendo
-	arriendo, _ = collection.CountDocuments(ctx, bson.M{
-		"estado": bson.M{"$in": []string{"arriendo", "ocupado"}},
-	})
+	// Sumar cantidad donde estado es "arriendo" u "ocupado"
+	arriendo = sumarCantidadPorEstado(ctx, collection, bson.M{"estado": bson.M{"$in": []string{"arriendo", "ocupado"}}})
 
-	total, _ = collection.CountDocuments(ctx, bson.M{})
+	// Sumar cantidad total
+	total = sumarCantidadPorEstado(ctx, collection, bson.M{})
 
 	resumen := models.ResumenDiario{
 		Fecha:                   time.Now().AddDate(0, 0, -1), // Día anterior
@@ -47,6 +47,30 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resumen)
 }
+
+func sumarCantidadPorEstado(ctx context.Context, collection *mongo.Collection, filtro bson.M) int64 {
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: filtro}},
+		{{Key: "$group", Value: bson.M{
+			"_id":     nil,
+			"total": bson.M{"$sum": "$cantidad"},
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return 0
+	}
+	defer cursor.Close(ctx)
+
+	var resultado []bson.M
+	if err = cursor.All(ctx, &resultado); err != nil || len(resultado) == 0 {
+		return 0
+	}
+
+	return resultado[0]["total"].(int64)
+}
+
 
 func ObtenerResumenes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
