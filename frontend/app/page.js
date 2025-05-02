@@ -200,9 +200,67 @@ export default function Home() {
               {currentDate}
             </div>
           </div>
+          <div className="relative mb-9">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center text-black my-6">
+              Stock de los container
+            </h1>
+            <div className="absolute top-0 right-0 text-gray-900 text-sm sm:text-base font-semibold mt-8 sm:mt-0 shadow-lg px-2 py-1 rounded-lg bg-yellow-200 border-2 border-yellow-400 ">
+              {currentDate}
+            </div>
+          </div>
 
-          {/* Secciones de resumen global + bloques */}
-          {/* ... resto del código sin cambios ... */}
+          {/* Resumen Global */}
+          <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+              Resumen Global
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full text-center">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                  Disponible para arriendo
+                </h3>
+                <div className="text-2xl font-extrabold text-green-600">
+                  {globalAvailable}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                  Arriendado{" "}
+                </h3>
+                <div className="text-2xl font-extrabold text-red-500">
+                  {globalOccupied}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                  Stock Total
+                </h3>
+                <div className="text-2xl font-extrabold text-blue-500">
+                  {globalStock}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center text-center">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                Items
+              </h3>
+              <h3 className="text-lg sm:text-xl font-bold text-green-600">
+                Disponible para arriendo
+              </h3>
+              <h3 className="text-lg sm:text-xl font-bold text-yellow-500">
+                En Mantención
+              </h3>
+              <h3 className="text-lg sm:text-xl font-bold text-red-500">
+                Arrendados
+              </h3>
+              <h3 className="text-lg sm:text-xl font-bold text-blue-500">
+                Stock Total
+              </h3>
+            </div>
+          </div>
+
           <div className="bg-white rounded-xl shadow-md p-4 mb-6">
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center text-center">
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">Items</h3>
