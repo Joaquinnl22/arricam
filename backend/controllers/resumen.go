@@ -21,17 +21,18 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 	collection := config.DB.Collection("items")
 	resumenCollection := config.DB.Collection("resumenes")
 
-	var disponible, arriendo, total int64
+	var disponible, arriendo, ocupado, total int64
 
 	disponible, _ = collection.CountDocuments(ctx, bson.M{"estado": "disponible"})
 	arriendo, _ = collection.CountDocuments(ctx, bson.M{"estado": "arriendo"})
+	ocupado, _ = collection.CountDocuments(ctx, bson.M{"estado": "ocupado"})
 	total, _ = collection.CountDocuments(ctx, bson.M{})
 
 	resumen := models.ResumenDiario{
-		Fecha:                time.Now().AddDate(0, 0, -1), // Día anterior
-		Disponible:           int(disponible),
-		Arriendado:           int(arriendo),
-		StockTotal:           int(total),
+		Fecha:                  time.Now().AddDate(0, 0, -1), // Día anterior
+		Disponible:             int(disponible),
+		Arriendado:             int(arriendo + ocupado),
+		StockTotal:             int(total),
 		GeneradoAutomaticamente: true,
 	}
 
@@ -44,6 +45,7 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resumen)
 }
+
 func ObtenerResumenes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
