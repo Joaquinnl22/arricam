@@ -2,16 +2,17 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
-	"encoding/json"
-	
 
 	"backend/config"
 	"backend/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
 func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -49,11 +50,11 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 }
 
 func sumarCantidadPorEstado(ctx context.Context, collection *mongo.Collection, filtro bson.M) int64 {
-	pipeline := mongo.Pipeline{
+	pipeline := []bson.D{
 		{{Key: "$match", Value: filtro}},
-		{{Key: "$group", Value: bson.M{
-			"_id":     nil,
-			"total": bson.M{"$sum": "$cantidad"},
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "total", Value: bson.D{{Key: "$sum", Value: "$cantidad"}}},
 		}}},
 	}
 
@@ -68,9 +69,18 @@ func sumarCantidadPorEstado(ctx context.Context, collection *mongo.Collection, f
 		return 0
 	}
 
-	return resultado[0]["total"].(int64)
+	// Asegura el tipo correcto del resultado
+	switch v := resultado[0]["total"].(type) {
+	case int32:
+		return int64(v)
+	case int64:
+		return v
+	case float64:
+		return int64(v)
+	default:
+		return 0
+	}
 }
-
 
 func ObtenerResumenes(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -79,8 +89,8 @@ func ObtenerResumenes(w http.ResponseWriter, r *http.Request) {
 	collection := config.DB.Collection("resumenes")
 
 	opts := options.Find()
-	opts.SetSort(bson.D{{"fecha", -1}}) // del más reciente al más antiguo
-	opts.SetLimit(1)                    // solo el resumen del día anterior
+	opts.SetSort(bson.D{{Key: "fecha", Value: -1}}) // del más reciente al más antiguo
+	opts.SetLimit(1)                                // solo el resumen del día anterior
 
 	cursor, err := collection.Find(ctx, bson.M{}, opts)
 	if err != nil {
