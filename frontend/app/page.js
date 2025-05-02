@@ -261,15 +261,6 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center text-center">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800">Items</h3>
-              <h3 className="text-lg sm:text-xl font-bold text-green-600">Disponible</h3>
-              <h3 className="text-lg sm:text-xl font-bold text-yellow-500">Mantención</h3>
-              <h3 className="text-lg sm:text-xl font-bold text-red-500">Arrendados</h3>
-              <h3 className="text-lg sm:text-xl font-bold text-blue-500">Total</h3>
-            </div>
-          </div>
 
           <div className="grid grid-rows-8 gap-4">
             {renderBlock("Oficinas", items.oficinas, FaBuilding)}
