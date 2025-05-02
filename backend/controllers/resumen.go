@@ -10,6 +10,8 @@ import (
 	"backend/config"
 	"backend/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 )
 
 func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
@@ -41,4 +43,30 @@ func GenerarResumenDiario(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resumen)
+}
+func ObtenerResumenes(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := config.DB.Collection("resumenes")
+
+	opts := options.Find()
+	opts.SetSort(bson.D{{"fecha", -1}}) // del más reciente al más antiguo
+	opts.SetLimit(1)                    // solo el resumen del día anterior
+
+	cursor, err := collection.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		http.Error(w, "Error al obtener resumen", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var resumenes []models.ResumenDiario
+	if err := cursor.All(ctx, &resumenes); err != nil {
+		http.Error(w, "Error al procesar datos", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resumenes)
 }

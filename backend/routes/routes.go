@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"backend/config"
 	"backend/controllers"
+	
 )
 
 // ⬇️ Middleware de CORS
@@ -40,6 +41,8 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/items/changes", controllers.GetLastChanges).Methods("GET")
 	api.HandleFunc("/subscribe", controllers.Subscribe).Methods("POST")
 	api.HandleFunc("/resumenes/generar", controllers.GenerarResumenDiario).Methods("POST")
+	api.HandleFunc("/resumenes", controllers.ObtenerResumenes).Methods("GET")
+
 
 
 	return router
