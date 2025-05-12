@@ -147,6 +147,7 @@ export default function FiltroPorTipoPage({ params }) {
             if (!response.ok) throw new Error("Failed to add item");
 
             await fetchItems(); // Refresca los ítems después de agregar
+            await notifyUser("Item agregado", "Un nuevo container fue añadido al sistema.");
             handleCloseAgregar();
           } catch (error) {
             console.error(error);
