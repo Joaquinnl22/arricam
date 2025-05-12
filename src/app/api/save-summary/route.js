@@ -6,12 +6,13 @@ export async function POST(req) {
     await connectToDatabase();
     const body = await req.json();
 
-    const { globalAvailable, globalOccupied, globalStock, date } = body;
+    const { globalAvailable,globalMaintenance, globalOccupied, globalStock, date } = body;
 
     const existing = await GlobalSummary.findOne({ date });
 
     if (existing) {
       existing.globalAvailable = globalAvailable;
+      existing.globalMaintenance = globalMaintenance;
       existing.globalOccupied = globalOccupied;
       existing.globalStock = globalStock;
       await existing.save();
@@ -19,6 +20,7 @@ export async function POST(req) {
       await GlobalSummary.create({
         date,
         globalAvailable,
+        globalMaintenance,
         globalOccupied,
         globalStock,
       });
