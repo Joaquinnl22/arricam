@@ -5,6 +5,6 @@ async function notifyUser(title, body) {
   const registration = await navigator.serviceWorker.ready;
   registration.showNotification(title, {
     body,
-    icon: '/favicon.ico',
+    icon: '/arricam.png',
   });
 }

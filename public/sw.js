@@ -20,4 +20,7 @@ self.addEventListener('install', () => {
   
     event.waitUntil(self.registration.showNotification(title, options));
   });
+  self.addEventListener('fetch', function(event) {
+    // No es necesario hacer nada, pero este listener debe existir
+  });
   

@@ -68,7 +68,7 @@ export async function POST(req) {
     const notificationPayload = JSON.stringify({
       title: "¡Nuevo ítem agregado!",
       body: `Se ha agregado: ${data.title}`,
-      icon: "/favicon.ico",
+      icon: "/arricam.png",
     });
     
     for (const sub of subscriptions) {

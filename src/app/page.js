@@ -24,7 +24,7 @@ async function notifyUser(title, body) {
     const registration = await navigator.serviceWorker.ready;
     registration.showNotification(title, {
       body,
-      icon: "/favicon.ico",
+      icon: "/arricam.png",
     });
   } catch (err) {
     console.error("Error al mostrar la notificación:", err);
@@ -155,20 +155,20 @@ export default function Home() {
   }, []);
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
+      console.log('[PWA] Evento beforeinstallprompt detectado');
       e.preventDefault();
-      setDeferredPrompt(e); // Guardamos el evento
-      setShowInstallPrompt(true); // 👉 Mostrar siempre si se lanza el evento
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
     };
-
+  
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
+  
     return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
   }, []);
+  
+  
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.ready.then(async (registration) => {
