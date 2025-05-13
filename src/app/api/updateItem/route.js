@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import connectToDatabase from "@/lib/mongodb";
 import mongoose from "mongoose";
+import webpush from "web-push";
+import Subscription from "@/models/Subscription";
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -8,6 +10,13 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// Configura WebPush
+webpush.setVapidDetails(
+  "mailto:admin@arricam.cl",
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
 // Definir modelo de MongoDB si no existe
 if (!mongoose.models.Item) {
@@ -115,12 +124,42 @@ export async function PUT(req) {
       await targetItem.save();
     }
 
+    // Actualiza o elimina el ítem original
     currentItem.cantidad -= cantidadNumerica;
     if (currentItem.cantidad <= 0) {
       await currentItem.deleteOne();
     } else {
       currentItem.imagenes = [...new Set([...currentItem.imagenes, ...imagenes])];
       await currentItem.save();
+    }
+
+    // Enviar notificación push
+    try {
+      const subscriptions = await Subscription.find({});
+
+      let estadoTexto = nuevoEstado;
+      if (nuevoEstado === "arriendo" && arrendadoPor) {
+        estadoTexto += ` (arrendado por ${arrendadoPor})`;
+      }
+
+      const notificationPayload = JSON.stringify({
+        title: "¡Estado actualizado!",
+        body: `Ítem "${title}" ha sido movido a: ${estadoTexto}`,
+        icon: "/arricam.png",
+      });
+
+      for (const sub of subscriptions) {
+        try {
+          await webpush.sendNotification(sub, notificationPayload);
+        } catch (err) {
+          console.error("Error enviando a una suscripción:", err);
+          if (err.statusCode === 410) {
+            await Subscription.deleteOne({ endpoint: sub.endpoint });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error al manejar las notificaciones:", err);
     }
 
     return new Response(

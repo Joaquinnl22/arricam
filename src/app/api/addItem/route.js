@@ -65,9 +65,15 @@ export async function POST(req) {
     const newItem = new Item(data);
     await newItem.save();
     const subscriptions = await Subscription.find({});
+    let estadoTexto = data.estado;
+    
+    if (data.estado === "ocupado" && data.arrendadoPor) {
+      estadoTexto += ` (arrendado por ${data.arrendadoPor})`;
+    }
+    
     const notificationPayload = JSON.stringify({
-      title: "¡Nuevo ítem agregado!",
-      body: `Se ha agregado: ${data.title}`,
+      title: "¡Nuevo Container agregado!",
+      body: `Se ha agregado: ${data.title} - Estado: ${estadoTexto}`,
       icon: "/arricam.png",
     });
     

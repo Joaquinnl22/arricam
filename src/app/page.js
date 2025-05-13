@@ -383,10 +383,7 @@ export default function Home() {
                 if (!response.ok) throw new Error("Failed to add item");
                 await fetchItems(); // Refresca los ítems después de agregar
                 handleCloseAgregar();
-                await notifyUser(
-                  "Nuevo ítem agregado",
-                  "Se ha agregado un nuevo container."
-                );
+        
               } catch (error) {
                 console.error(error);
               }
