@@ -31,11 +31,6 @@ async function notifyUser(title, body) {
   }
 }
 
-function isMobile() {
-  if (typeof window === "undefined") return false;
-  return /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
-}
-
 export default function Home() {
   const [items, setItems] = useState({
     baños: [],
@@ -125,21 +120,6 @@ export default function Home() {
     setCurrentDate(formattedDate);
   }, []);
 
-
-  useEffect(() => {
-    // Asegúrate de que el código se ejecute solo en el cliente
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission().then((permission) => {
-          if (permission !== "granted") {
-            console.warn("Permiso de notificaciones denegado");
-          }
-        });
-      }
-    } else {
-      console.warn("Notificaciones no soportadas en este entorno");
-    }
-  }, []);
   useEffect(() => {
     // Registrar el Service Worker
     if ("serviceWorker" in navigator) {
@@ -155,20 +135,22 @@ export default function Home() {
   }, []);
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
-      console.log('[PWA] Evento beforeinstallprompt detectado');
+      console.log("[PWA] Evento beforeinstallprompt detectado");
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
     };
-  
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-  
+
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
     };
   }, []);
-  
-  
+
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.ready.then(async (registration) => {
@@ -180,8 +162,6 @@ export default function Home() {
       });
     }
   }, []);
-
-
 
   const fetchItems = async () => {
     setLoading(true);
@@ -213,22 +193,12 @@ export default function Home() {
     }
   };
 
-  const handleOpenAgregar = () => setIsAgregarOpen(true);
-
   const calculateStateCounts = (items, state) => {
     return items
       .filter((item) => item.estado === state)
       .reduce((sum, item) => sum + (item.cantidad || 0), 0);
   };
 
-  const calculateGlobalStock = (items) => {
-    return Object.values(items).reduce((total, itemGroup) => {
-      return (
-        total +
-        itemGroup.reduce((groupSum, item) => groupSum + (item.cantidad || 0), 0)
-      );
-    }, 0);
-  };
   const renderBlock = (type, items, Icon) => {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
@@ -262,39 +232,24 @@ export default function Home() {
       </div>
     );
   };
-  const globalMaintenance = Object.values(items).reduce((total, itemGroup) => {
-    return (
-      total +
-      itemGroup
-        .filter((item) => item.estado === "mantencion")
-        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
+  const calculateGlobalCount = (estado) =>
+    Object.values(items).reduce(
+      (total, group) =>
+        total +
+        group
+          .filter((item) => item.estado === estado)
+          .reduce((sum, i) => sum + (i.cantidad || 0), 0),
+      0
     );
-  }, 0);
-  
+  const globalAvailable = calculateGlobalCount("disponible");
+  const globalOccupied = calculateGlobalCount("arriendo");
+  const globalMaintenance = calculateGlobalCount("mantencion");
 
-  const globalAvailable = Object.values(items).reduce((total, itemGroup) => {
-    return (
-      total +
-      itemGroup
-        .filter((item) => item.estado === "disponible")
-        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
-    );
-  }, 0);
-
-  const globalOccupied = Object.values(items).reduce((total, itemGroup) => {
-    return (
-      total +
-      itemGroup
-        .filter((item) => item.estado === "arriendo")
-        .reduce((sum, item) => sum + (item.cantidad || 0), 0)
-    );
-  }, 0);
-
-  const globalStock = calculateGlobalStock(items);
+  const globalStock = globalAvailable + globalOccupied + globalMaintenance;
   useEffect(() => {
     if (globalStock > 0) {
       const todayISO = new Date().toISOString().split("T")[0];
-  
+
       fetch("/api/save-summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -313,12 +268,12 @@ export default function Home() {
         .catch((err) => console.error("Error al guardar resumen global:", err));
     }
   }, [globalAvailable, globalOccupied, globalMaintenance, globalStock]);
-  
+
   useEffect(() => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const formatted = yesterday.toISOString().split("T")[0];
-  
+
     fetch(`/api/get-summary?date=${formatted}`)
       .then((res) => {
         if (!res.ok) {
@@ -336,7 +291,6 @@ export default function Home() {
         console.error("Error al obtener el resumen del día anterior:", err);
       });
   }, []);
-  
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
@@ -353,7 +307,7 @@ export default function Home() {
                 ¿Quieres agregar esta app a tu pantalla de inicio?
               </p>
               <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-4 py-2 rounded border border-yellow-600"
                 onClick={async () => {
                   if (deferredPrompt) {
                     deferredPrompt.prompt();
@@ -376,7 +330,7 @@ export default function Home() {
           {!isSubscribed && (
             <button
               onClick={() => setShowNotificationModal(true)}
-              className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-full shadow-lg z-40 transition-all duration-300"
+              className="fixed bottom-6 right-6 bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-5 py-3 rounded-full shadow-lg border border-yellow-600 z-40 transition-all duration-300"
             >
               🔔 Activar notificaciones
             </button>
@@ -385,7 +339,7 @@ export default function Home() {
           {showNotificationModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
               <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full text-center">
-                <h2 className="text-lg font-bold mb-3">
+                <h2 className="text-lg font-bold text-gray-900 mb-3">
                   ¿Activar notificaciones?
                 </h2>
                 <p className="mb-4 text-sm text-gray-600">
@@ -393,13 +347,13 @@ export default function Home() {
                 </p>
                 <div className="flex justify-center gap-3">
                   <button
-                    className="bg-gray-400 text-white px-4 py-2 rounded"
+                    className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
                     onClick={() => setShowNotificationModal(false)}
                   >
                     Cancelar
                   </button>
                   <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-4 py-2 rounded border border-yellow-600"
                     onClick={async () => {
                       await subscribeToPush();
                       setShowNotificationModal(false);
@@ -413,7 +367,7 @@ export default function Home() {
           )}
 
           {/* Contenido principal */}
-          <Navbar onAddClick={handleOpenAgregar} />
+          <Navbar onAddClick={() => setIsAgregarOpen(true)} />
 
           <ModalAgregar
             isOpen={isAgregarOpen}
@@ -447,54 +401,54 @@ export default function Home() {
             </div>
           </div>
           {previousSummary && (
-  <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
-    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-      Resumen Global del Día Anterior
-    </h2>
-    <div className="text-gray-600 text-sm font-medium mb-4">
-      {new Date(previousSummary.date).toLocaleDateString("es-ES", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
-      <div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-600">
-          Disponible para arriendo
-        </h3>
-        <div className="text-2xl font-extrabold text-green-600">
-          {previousSummary.globalAvailable}
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-600">
-          En Mantención
-        </h3>
-        <div className="text-2xl font-extrabold text-yellow-500">
-          {previousSummary.globalMaintenance || 0}
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-600">
-          Arriendado
-        </h3>
-        <div className="text-2xl font-extrabold text-red-500">
-          {previousSummary.globalOccupied}
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-600">
-          Stock Total
-        </h3>
-        <div className="text-2xl font-extrabold text-blue-500">
-          {previousSummary.globalStock}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                Resumen Global del Día Anterior
+              </h2>
+              <div className="text-gray-600 text-sm font-medium mb-4">
+                {new Date(previousSummary.date).toLocaleDateString("es-ES", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Disponible para arriendo
+                  </h3>
+                  <div className="text-2xl font-extrabold text-green-600">
+                    {previousSummary.globalAvailable}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    En Mantención
+                  </h3>
+                  <div className="text-2xl font-extrabold text-yellow-500">
+                    {previousSummary.globalMaintenance || 0}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Arriendado
+                  </h3>
+                  <div className="text-2xl font-extrabold text-red-500">
+                    {previousSummary.globalOccupied}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Stock Total
+                  </h3>
+                  <div className="text-2xl font-extrabold text-blue-500">
+                    {previousSummary.globalStock}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Resumen Global */}
           <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
