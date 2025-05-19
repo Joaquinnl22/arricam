@@ -1,26 +1,27 @@
 import connectToDatabase from "@/lib/mongodb";
 import GlobalSummary from "@/models/GlobalSummary";
 
-export const dynamic = "force-dynamic"; // necesario si usas app router (Next.js 13+)
+export const dynamic = "force-dynamic"; // si usas app router
 
 export async function GET() {
   try {
     await connectToDatabase();
 
-    const latestSummary = await GlobalSummary.find({})
-      .sort({ date: -1 }) // como es string en formato YYYY-MM-DD, esto funciona
-      .limit(1)
+    const summaries = await GlobalSummary.find({})
+      .sort({ date: -1 }) // los más recientes primero
+      .limit(2)            // obtenemos los dos últimos
       .lean();
 
-    if (!latestSummary.length) {
+    if (summaries.length < 2) {
       return new Response(
-        JSON.stringify({ message: "No hay resúmenes disponibles" }),
+        JSON.stringify({ message: "No hay suficientes resúmenes disponibles" }),
         { status: 404 }
       );
     }
 
+    const penultimate = summaries[1]; // este es el anterior al actual
     return new Response(
-      JSON.stringify({ date: latestSummary[0].date }),
+      JSON.stringify({ date: penultimate.date }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
