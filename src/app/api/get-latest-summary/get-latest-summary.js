@@ -1,15 +1,18 @@
 import connectToDatabase from "@/lib/mongodb";
 import GlobalSummary from "@/models/GlobalSummary";
 
+export const dynamic = "force-dynamic"; // necesario si usas app router (Next.js 13+)
+
 export async function GET() {
   try {
     await connectToDatabase();
 
-    const latestSummary = await GlobalSummary.findOne({})
-      .sort({ date: -1 }) // Asegúrate de tener el campo `date` como Date o ISO string
+    const latestSummary = await GlobalSummary.find({})
+      .sort({ date: -1 }) // como es string en formato YYYY-MM-DD, esto funciona
+      .limit(1)
       .lean();
 
-    if (!latestSummary) {
+    if (!latestSummary.length) {
       return new Response(
         JSON.stringify({ message: "No hay resúmenes disponibles" }),
         { status: 404 }
@@ -17,13 +20,14 @@ export async function GET() {
     }
 
     return new Response(
-      JSON.stringify({ date: latestSummary.date.toISOString().split("T")[0] }),
+      JSON.stringify({ date: latestSummary[0].date }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }
     );
   } catch (error) {
+    console.error("Error al obtener resumen más reciente:", error);
     return new Response(
       JSON.stringify({ message: "Error interno", error: error.message }),
       { status: 500 }
