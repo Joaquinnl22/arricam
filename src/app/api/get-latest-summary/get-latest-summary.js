@@ -1,37 +1,33 @@
 import connectToDatabase from "@/lib/mongodb";
 import GlobalSummary from "@/models/GlobalSummary";
 
-export const dynamic = "force-dynamic"; // si usas app router
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Método no permitido" });
+  }
 
-export async function GET() {
   try {
     await connectToDatabase();
 
     const summaries = await GlobalSummary.find({})
-      .sort({ date: -1 }) // los más recientes primero
-      .limit(2)            // obtenemos los dos últimos
+      .sort({ date: -1 })
+      .limit(2)
       .lean();
 
+    console.log("Últimos 2 resúmenes:", summaries);
+
     if (summaries.length < 2) {
-      return new Response(
-        JSON.stringify({ message: "No hay suficientes resúmenes disponibles" }),
-        { status: 404 }
-      );
+      return res
+        .status(404)
+        .json({ message: "No hay suficientes resúmenes disponibles" });
     }
 
-    const penultimate = summaries[1]; // este es el anterior al actual
-    return new Response(
-      JSON.stringify({ date: penultimate.date }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const penultimate = summaries[1];
+    res.status(200).json({ date: penultimate.date });
   } catch (error) {
     console.error("Error al obtener resumen más reciente:", error);
-    return new Response(
-      JSON.stringify({ message: "Error interno", error: error.message }),
-      { status: 500 }
-    );
+    res
+      .status(500)
+      .json({ message: "Error interno", error: error.message });
   }
 }

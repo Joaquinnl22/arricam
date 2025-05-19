@@ -162,6 +162,25 @@ export default function Home() {
       });
     }
   }, []);
+  useEffect(() => {
+  fetch("/api/get-latest-summary")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("⏳ Fecha del penúltimo resumen:", data);
+      if (data?.date) {
+        fetch(`/api/get-summary?date=${data.date}`)
+          .then((res) => res.json())
+          .then((summary) => {
+            console.log("📊 Resumen cargado:", summary);
+            setPreviousSummary(summary);
+          });
+      }
+    })
+    .catch((err) => {
+      console.error("🔥 Error al obtener resumen:", err);
+    });
+}, []);
+
 
   const fetchItems = async () => {
     setLoading(true);
