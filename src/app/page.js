@@ -270,27 +270,35 @@ export default function Home() {
   }, [globalAvailable, globalOccupied, globalMaintenance, globalStock]);
 
   useEffect(() => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const formatted = yesterday.toISOString().split("T")[0];
-
-    fetch(`/api/get-summary?date=${formatted}`)
-      .then((res) => {
-        if (!res.ok) {
-          console.warn(`Resumen no encontrado para ${formatted}`);
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data) {
-          setPreviousSummary(data);
-        }
-      })
-      .catch((err) => {
-        console.error("Error al obtener el resumen del día anterior:", err);
-      });
-  }, []);
+  fetch("/api/get-latest-summary")
+    .then((res) => {
+      if (!res.ok) {
+        console.warn("No se pudo obtener la fecha más reciente con resumen");
+        return null;
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data?.date) {
+        fetch(`/api/get-summary?date=${data.date}`)
+          .then((res) => {
+            if (!res.ok) {
+              console.warn(`Resumen no encontrado para ${data.date}`);
+              return null;
+            }
+            return res.json();
+          })
+          .then((summary) => {
+            if (summary) {
+              setPreviousSummary(summary);
+            }
+          });
+      }
+    })
+    .catch((err) => {
+      console.error("Error al obtener el último resumen:", err);
+    });
+}, []);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
