@@ -330,6 +330,18 @@ export default function Home() {
       console.error("Error al obtener el último resumen:", err);
     });
 }, []);
+  let formattedPreviousDate = "";
+  if (previousSummary?.date) {
+    const [year, month, day] = previousSummary.date.split("-");
+    const fixedDate = new Date(year, month - 1, day);
+    formattedPreviousDate = fixedDate.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
