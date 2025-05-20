@@ -223,6 +223,18 @@ export default function Home() {
     const maintenanceCount = calculateStateCounts(items, "mantencion");
     const occupiedCount = calculateStateCounts(items, "arriendo");
 
+    let formattedPreviousDate = "";
+    if (previousSummary?.date) {
+      const [year, month, day] = previousSummary.date.split("-");
+      const fixedDate = new Date(year, month - 1, day);
+      formattedPreviousDate = fixedDate.toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+
     return (
       <div key={type} className="">
         <div className="bg-white rounded-xl shadow-md p-3">
@@ -430,12 +442,7 @@ export default function Home() {
                 Resumen Global del Día Anterior
               </h2>
               <div className="text-gray-600 text-sm font-medium mb-4">
-                {new Date(previousSummary.date).toLocaleDateString("es-ES", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formattedPreviousDate}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
                 <div>
