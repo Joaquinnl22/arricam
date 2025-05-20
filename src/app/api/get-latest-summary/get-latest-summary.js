@@ -1,11 +1,9 @@
 import connectToDatabase from "@/lib/mongodb";
 import GlobalSummary from "@/models/GlobalSummary";
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Método no permitido" });
-  }
+export const dynamic = "force-dynamic";
 
+export async function GET() {
   try {
     await connectToDatabase();
 
@@ -14,20 +12,21 @@ export default async function handler(req, res) {
       .limit(2)
       .lean();
 
-    console.log("Últimos 2 resúmenes:", summaries);
-
     if (summaries.length < 2) {
-      return res
-        .status(404)
-        .json({ message: "No hay suficientes resúmenes disponibles" });
+      return new Response(
+        JSON.stringify({ message: "No hay suficientes resúmenes disponibles" }),
+        { status: 404 }
+      );
     }
 
-    const penultimate = summaries[1];
-    res.status(200).json({ date: penultimate.date });
+    return new Response(
+      JSON.stringify({ date: summaries[1].date }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    console.error("Error al obtener resumen más reciente:", error);
-    res
-      .status(500)
-      .json({ message: "Error interno", error: error.message });
+    return new Response(
+      JSON.stringify({ message: "Error interno", error: error.message }),
+      { status: 500 }
+    );
   }
 }
