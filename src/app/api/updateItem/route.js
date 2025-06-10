@@ -20,15 +20,20 @@ webpush.setVapidDetails(
 
 // Definir modelo de MongoDB si no existe
 if (!mongoose.models.Item) {
-  const ItemSchema = new mongoose.Schema({
-    tipo: { type: String, required: true },
-    title: { type: String, required: true },
-    descripcion: { type: String, required: true },
-    estado: { type: String, required: true },
-    cantidad: { type: Number, default: 1, required: true },
-    imagenes: [{ type: String }],
-    arrendadoPor: { type: String, default: null }, // Nuevo campo
-  });
+  const ItemSchema = new mongoose.Schema(
+    {
+      tipo: { type: String, required: true },
+      title: { type: String, required: true },
+      descripcion: { type: String, required: true },
+      estado: { type: String, required: true },
+      cantidad: { type: Number, default: 1, required: true },
+      imagenes: [{ type: String }],
+      arrendadoPor: { type: String, default: null },
+    },
+    {
+      timestamps: true, // ✅ Agrega esto
+    }
+  );
 
   mongoose.model("Item", ItemSchema);
 }
@@ -39,13 +44,29 @@ export async function PUT(req) {
   try {
     await connectToDatabase();
 
-    let tipo, title, descripcion, estado, nuevoEstado, cantidadNumerica, arrendadoPor = null, imagenes = [];
+    let tipo,
+      title,
+      descripcion,
+      estado,
+      nuevoEstado,
+      cantidadNumerica,
+      arrendadoPor = null,
+      imagenes = [];
 
     const contentType = req.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {
       const body = await req.json();
-      ({ tipo, title, descripcion, estado, nuevoEstado, cantidad: cantidadNumerica, arrendadoPor, imagenes } = body);
+      ({
+        tipo,
+        title,
+        descripcion,
+        estado,
+        nuevoEstado,
+        cantidad: cantidadNumerica,
+        arrendadoPor,
+        imagenes,
+      } = body);
     } else if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       tipo = formData.get("tipo");
@@ -61,30 +82,51 @@ export async function PUT(req) {
         if (file && file.size > 0) {
           const buffer = Buffer.from(await file.arrayBuffer());
           const result = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream({ folder: "items" }, (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            });
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: "items" },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
             stream.end(buffer);
           });
           imagenes.push(result.secure_url);
         }
       }
     } else {
-      return new Response(JSON.stringify({ message: "Formato de solicitud no soportado." }), {
-        status: 415,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ message: "Formato de solicitud no soportado." }),
+        {
+          status: 415,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    if (!tipo || !title || !descripcion || !estado || !nuevoEstado || isNaN(cantidadNumerica)) {
+    if (
+      !tipo ||
+      !title ||
+      !descripcion ||
+      !estado ||
+      !nuevoEstado ||
+      isNaN(cantidadNumerica)
+    ) {
       return new Response(
-        JSON.stringify({ message: "Todos los campos son requeridos y 'cantidad' debe ser un número válido." }),
+        JSON.stringify({
+          message:
+            "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const currentItem = await Item.findOne({ tipo, title, descripcion, estado });
+    const currentItem = await Item.findOne({
+      tipo,
+      title,
+      descripcion,
+      estado,
+    });
 
     if (!currentItem) {
       return new Response(
@@ -95,12 +137,19 @@ export async function PUT(req) {
 
     if (cantidadNumerica > currentItem.cantidad) {
       return new Response(
-        JSON.stringify({ message: "Cantidad solicitada excede la cantidad disponible." }),
+        JSON.stringify({
+          message: "Cantidad solicitada excede la cantidad disponible.",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    let targetItem = await Item.findOne({ tipo, title, descripcion, estado: nuevoEstado });
+    let targetItem = await Item.findOne({
+      tipo,
+      title,
+      descripcion,
+      estado: nuevoEstado,
+    });
 
     if (targetItem) {
       targetItem.cantidad += cantidadNumerica;
@@ -129,37 +178,42 @@ export async function PUT(req) {
     if (currentItem.cantidad <= 0) {
       await currentItem.deleteOne();
     } else {
-      currentItem.imagenes = [...new Set([...currentItem.imagenes, ...imagenes])];
+      currentItem.imagenes = [
+        ...new Set([...currentItem.imagenes, ...imagenes]),
+      ];
       await currentItem.save();
     }
 
     // Enviar notificación push
-    try {
-      const subscriptions = await Subscription.find({});
+    // Enviar notificación push solo si el título NO es "test"
+    if (title.trim().toLowerCase() !== "test") {
+      try {
+        const subscriptions = await Subscription.find({});
 
-      let estadoTexto = nuevoEstado;
-      if (nuevoEstado === "arriendo" && arrendadoPor) {
-        estadoTexto += ` (arrendado por ${arrendadoPor})`;
-      }
+        let estadoTexto = nuevoEstado;
+        if (nuevoEstado === "arriendo" && arrendadoPor) {
+          estadoTexto += ` (arrendado por ${arrendadoPor})`;
+        }
 
-      const notificationPayload = JSON.stringify({
-        title: "¡Estado actualizado!",
-        body: `Ítem "${title}" ha sido movido a: ${estadoTexto}`,
-        icon: "/arricam.png",
-      });
+        const notificationPayload = JSON.stringify({
+          title: "¡Estado actualizado!",
+          body: `Ítem "${title}" ha sido movido a: ${estadoTexto}`,
+          icon: "/arricam.png",
+        });
 
-      for (const sub of subscriptions) {
-        try {
-          await webpush.sendNotification(sub, notificationPayload);
-        } catch (err) {
-          console.error("Error enviando a una suscripción:", err);
-          if (err.statusCode === 410) {
-            await Subscription.deleteOne({ endpoint: sub.endpoint });
+        for (const sub of subscriptions) {
+          try {
+            await webpush.sendNotification(sub, notificationPayload);
+          } catch (err) {
+            console.error("Error enviando a una suscripción:", err);
+            if (err.statusCode === 410) {
+              await Subscription.deleteOne({ endpoint: sub.endpoint });
+            }
           }
         }
+      } catch (err) {
+        console.error("Error al manejar las notificaciones:", err);
       }
-    } catch (err) {
-      console.error("Error al manejar las notificaciones:", err);
     }
 
     return new Response(
@@ -169,7 +223,10 @@ export async function PUT(req) {
   } catch (error) {
     console.error("Error en la API:", error);
     return new Response(
-      JSON.stringify({ message: "Error al actualizar el ítem", error: error.message }),
+      JSON.stringify({
+        message: "Error al actualizar el ítem",
+        error: error.message,
+      }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

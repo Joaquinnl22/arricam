@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 
 const ItemSchema = new mongoose.Schema({
-  tipo: { type: String, required: true },
-  title: { type: String, required: true },
-  descripcion: { type: String, required: true },
-  estado: { type: String, required: true },
+  tipo: String,
+  title: String,
+  descripcion: String,
+  estado: String,
   cantidad: { type: Number, default: 1 },
-  imagen: { type: String },  // Guardar la URL de la imagen aquí
+  imagen: { type: String, required: false },
+  arrendadoPor: { type: String, default: "NaN" },
+}, {
+  timestamps: true 
 });
 
 const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema);

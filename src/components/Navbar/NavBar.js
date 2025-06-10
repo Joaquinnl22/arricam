@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-export default function NavBar({ onAddClick, onFilterChange }) {
+export default function NavBar({ onAddClick, onFilterChange,onBackupClick }) {
   const router = useRouter();
 
   const handleFilterChange = (e) => {
@@ -51,6 +51,13 @@ export default function NavBar({ onAddClick, onFilterChange }) {
           className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-300 text-black px-4 py-2 rounded-md shadow-lg transition transform hover:scale-105"
         >
           + Agregar Ítem
+        </button>
+                {/* Botón Backup */}
+        <button
+          onClick={onBackupClick}
+          className="w-full sm:w-auto bg-yellow-400 hover:bg-blue-300 text-black px-4 py-2 rounded-md shadow-lg transition transform hover:scale-105"
+        >
+          Ver Historial
         </button>
       </div>
     </nav>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar/NavBar";
 import ModalAgregar from "../components/Modal/ModalAdd";
+import ModalBackup from "../components/Modal/ModalBackup";
 import NotificationModal from "../components/Modal/ModalNotificacion";
 
 import {
@@ -53,6 +54,7 @@ export default function Home() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [previousSummary, setPreviousSummary] = useState(null);
+  const [mostrarBackup, setMostrarBackup] = useState(false);
 
   const subscribeToPush = async () => {
     if (!("serviceWorker" in navigator))
@@ -187,6 +189,11 @@ export default function Home() {
     try {
       const response = await fetch("/api/getItems");
       const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        console.error("La respuesta no es una lista de ítems:", data);
+        return;
+      }
 
       const groupedItems = data.reduce((acc, item) => {
         if (!acc[item.tipo]) acc[item.tipo] = [];
@@ -418,7 +425,15 @@ export default function Home() {
           )}
 
           {/* Contenido principal */}
-          <Navbar onAddClick={() => setIsAgregarOpen(true)} />
+          <Navbar
+            onAddClick={() => setIsAgregarOpen(true)}
+            onBackupClick={() => setMostrarBackup(true)}
+          />
+
+          <ModalBackup
+            isOpen={mostrarBackup}
+            onClose={() => setMostrarBackup(false)}
+          />
 
           <ModalAgregar
             isOpen={isAgregarOpen}
@@ -434,7 +449,6 @@ export default function Home() {
                 if (!response.ok) throw new Error("Failed to add item");
                 await fetchItems(); // Refresca los ítems después de agregar
                 handleCloseAgregar();
-        
               } catch (error) {
                 console.error(error);
               }

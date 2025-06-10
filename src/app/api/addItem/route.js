@@ -15,7 +15,6 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-
 export async function POST(req) {
   try {
     await connectToDatabase();
@@ -51,43 +50,51 @@ export async function POST(req) {
     }
 
     delete mongoose.models.Item;
-    const ItemSchema = new mongoose.Schema({
-      tipo: String,
-      title: String,
-      descripcion: String,
-      estado: String,
-      cantidad: { type: Number, default: 1 },
-      imagenes: [{ type: String, required: false }],
-      arrendadoPor: { type: String, default: null }, // Añadido al esquema
-    });
+    const ItemSchema = new mongoose.Schema(
+      {
+        tipo: String,
+        title: String,
+        descripcion: String,
+        estado: String,
+        cantidad: { type: Number, default: 1 },
+        imagen: { type: String, required: false },
+        arrendadoPor: { type: String, default: "NaN" },
+      },
+      {
+        timestamps: true, // Esto agrega createdAt y updatedAt
+      }
+    );
 
     const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
     const newItem = new Item(data);
     await newItem.save();
-    const subscriptions = await Subscription.find({});
-    let estadoTexto = data.estado;
-    
-    if (data.estado === "ocupado" && data.arrendadoPor) {
-      estadoTexto += ` (arrendado por ${data.arrendadoPor})`;
-    }
-    
-    const notificationPayload = JSON.stringify({
-      title: "¡Nuevo Container agregado!",
-      body: `Se ha agregado: ${data.title} - Estado: ${estadoTexto}`,
-      icon: "/arricam.png",
-    });
-    
-    for (const sub of subscriptions) {
-      try {
-        await webpush.sendNotification(sub, notificationPayload);
-      } catch (err) {
-        console.error("Error enviando a una suscripción:", err);
-        // Si el error es 410 (Gone), elimina la suscripción muerta
-        if (err.statusCode === 410) {
-          await Subscription.deleteOne({ endpoint: sub.endpoint });
+    // Evitar notificación si el título es "test"
+    if (data.title.trim().toLowerCase() !== "test") {
+      const subscriptions = await Subscription.find({});
+      let estadoTexto = data.estado;
+
+      if (data.estado === "ocupado" && data.arrendadoPor) {
+        estadoTexto += ` (arrendado por ${data.arrendadoPor})`;
+      }
+
+      const notificationPayload = JSON.stringify({
+        title: "¡Nuevo Container agregado!",
+        body: `Se ha agregado: ${data.title} - Estado: ${estadoTexto}`,
+        icon: "/arricam.png",
+      });
+
+      for (const sub of subscriptions) {
+        try {
+          await webpush.sendNotification(sub, notificationPayload);
+        } catch (err) {
+          console.error("Error enviando a una suscripción:", err);
+          if (err.statusCode === 410) {
+            await Subscription.deleteOne({ endpoint: sub.endpoint });
+          }
         }
       }
-    } 
+    }
+
     return new Response(
       JSON.stringify({ message: "Item added successfully", data: newItem }),
       {
@@ -104,5 +111,4 @@ export async function POST(req) {
       }
     );
   }
-  
-} 
+}

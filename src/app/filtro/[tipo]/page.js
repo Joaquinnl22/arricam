@@ -7,6 +7,8 @@ import ItemCard from "../../../components/ItemCard/ItemCard";
 import ModalAgregar from "../../../components/Modal/ModalAdd";
 import ModalEditar from "../../../components/Modal/ModalEdit";
 import ModalDel from "../../../components/Modal/ModaDel";
+import ModalBackup from "../../../components/Modal/ModalBackup";
+
 
 export default function FiltroPorTipoPage({ params }) {
   const { tipo } = use(params);
@@ -23,6 +25,7 @@ export default function FiltroPorTipoPage({ params }) {
   const [loading, setLoading] = useState(false); // Add loading state
 
   const [editItem, setEditItem] = useState(null);
+    const [mostrarBackup, setMostrarBackup] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
 
   const normalize = (str) => {
@@ -131,8 +134,14 @@ export default function FiltroPorTipoPage({ params }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-4 sm:p-6">
-      <Navbar onAddClick={handleOpenAgregar} />
-
+          <Navbar
+            onAddClick={() => setIsAgregarOpen(true)}
+            onBackupClick={() => setMostrarBackup(true)}
+          />
+                 <ModalBackup
+                      isOpen={mostrarBackup}
+                      onClose={() => setMostrarBackup(false)}
+                    />
       <ModalAgregar
         isOpen={isAgregarOpen}
         onClose={handleCloseAgregar}
