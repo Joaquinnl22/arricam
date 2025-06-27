@@ -55,6 +55,7 @@ export default function Home() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [previousSummary, setPreviousSummary] = useState(null);
   const [mostrarBackup, setMostrarBackup] = useState(false);
+  const [previousMonthSummary, setPreviousMonthSummary] = useState(null);
 
   const subscribeToPush = async () => {
     if (!("serviceWorker" in navigator))
@@ -96,6 +97,15 @@ export default function Home() {
     setIsSubscribed(true);
     toast.success("¡Notificaciones activadas!");
   };
+
+  function getLastDayOfPreviousMonth() {
+    const date = new Date();
+    date.setDate(0); // Día 0 del mes actual es el último del mes anterior
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`; // formato YYYY-MM-DD
+  }
 
   // Convierte clave base64 a Uint8Array (necesario para push)
   function urlBase64ToUint8Array(base64String) {
@@ -165,24 +175,42 @@ export default function Home() {
     }
   }, []);
   useEffect(() => {
-  fetch("/api/get-latest-summary")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("⏳ Fecha del penúltimo resumen:", data);
-      if (data?.date) {
-        fetch(`/api/get-summary?date=${data.date}`)
-          .then((res) => res.json())
-          .then((summary) => {
-            console.log("📊 Resumen cargado:", summary);
-            setPreviousSummary(summary);
-          });
-      }
-    })
-    .catch((err) => {
-      console.error("🔥 Error al obtener resumen:", err);
-    });
-}, []);
-
+    fetch("/api/get-latest-summary")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("⏳ Fecha del penúltimo resumen:", data);
+        if (data?.date) {
+          fetch(`/api/get-summary?date=${data.date}`)
+            .then((res) => res.json())
+            .then((summary) => {
+              console.log("📊 Resumen cargado:", summary);
+              setPreviousSummary(summary);
+            });
+        }
+      })
+      .catch((err) => {
+        console.error("🔥 Error al obtener resumen:", err);
+      });
+  }, []);
+  useEffect(() => {
+    const lastDay = getLastDayOfPreviousMonth();
+    fetch(`/api/get-summary?date=${lastDay}`)
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`No se encontró resumen para ${lastDay}`);
+          return null;
+        }
+        return res.json();
+      })
+      .then((summary) => {
+        if (summary) {
+          setPreviousMonthSummary(summary);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al obtener resumen del mes anterior:", err);
+      });
+  }, []);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -308,35 +336,35 @@ export default function Home() {
   }, [globalAvailable, globalOccupied, globalMaintenance, globalStock]);
 
   useEffect(() => {
-  fetch("/api/get-latest-summary")
-    .then((res) => {
-      if (!res.ok) {
-        console.warn("No se pudo obtener la fecha más reciente con resumen");
-        return null;
-      }
-      return res.json();
-    })
-    .then((data) => {
-      if (data?.date) {
-        fetch(`/api/get-summary?date=${data.date}`)
-          .then((res) => {
-            if (!res.ok) {
-              console.warn(`Resumen no encontrado para ${data.date}`);
-              return null;
-            }
-            return res.json();
-          })
-          .then((summary) => {
-            if (summary) {
-              setPreviousSummary(summary);
-            }
-          });
-      }
-    })
-    .catch((err) => {
-      console.error("Error al obtener el último resumen:", err);
-    });
-}, []);
+    fetch("/api/get-latest-summary")
+      .then((res) => {
+        if (!res.ok) {
+          console.warn("No se pudo obtener la fecha más reciente con resumen");
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.date) {
+          fetch(`/api/get-summary?date=${data.date}`)
+            .then((res) => {
+              if (!res.ok) {
+                console.warn(`Resumen no encontrado para ${data.date}`);
+                return null;
+              }
+              return res.json();
+            })
+            .then((summary) => {
+              if (summary) {
+                setPreviousSummary(summary);
+              }
+            });
+        }
+      })
+      .catch((err) => {
+        console.error("Error al obtener el último resumen:", err);
+      });
+  }, []);
   let formattedPreviousDate = "";
   if (previousSummary?.date) {
     const [year, month, day] = previousSummary.date.split("-");
@@ -348,7 +376,6 @@ export default function Home() {
       day: "numeric",
     });
   }
-
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
@@ -462,6 +489,59 @@ export default function Home() {
               {currentDate}
             </div>
           </div>
+          {previousMonthSummary && (
+            <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                Resumen Global Mes Anterior
+              </h2>
+              <div className="text-gray-600 text-sm font-medium mb-4">
+                {new Date(previousMonthSummary.date).toLocaleDateString(
+                  "es-ES",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Disponible para arriendo
+                  </h3>
+                  <div className="text-2xl font-extrabold text-green-600">
+                    {previousMonthSummary.globalAvailable}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    En Mantención
+                  </h3>
+                  <div className="text-2xl font-extrabold text-yellow-500">
+                    {previousMonthSummary.globalMaintenance || 0}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Arriendado
+                  </h3>
+                  <div className="text-2xl font-extrabold text-red-500">
+                    {previousMonthSummary.globalOccupied}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                    Stock Total
+                  </h3>
+                  <div className="text-2xl font-extrabold text-blue-500">
+                    {previousMonthSummary.globalStock}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {previousSummary && (
             <div className="bg-white rounded-xl shadow-md p-4 transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col items-center mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">

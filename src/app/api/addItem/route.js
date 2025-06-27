@@ -26,7 +26,8 @@ export async function POST(req) {
       descripcion: form.get("descripcion"),
       estado: form.get("estado"),
       cantidad: Number(form.get("cantidad")),
-      arrendadoPor: form.get("arrendadoPor") || null, // Añadido
+      arrendadoPor: form.get("arrendadoPor") || null,
+      accion: "agregado", 
     };
 
     const files = form.getAll("imagenes");
@@ -59,6 +60,7 @@ export async function POST(req) {
         cantidad: { type: Number, default: 1 },
         imagen: { type: String, required: false },
         arrendadoPor: { type: String, default: "NaN" },
+        accion: { type: String, default: "agregado" }
       },
       {
         timestamps: true, // Esto agrega createdAt y updatedAt

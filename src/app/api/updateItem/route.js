@@ -29,6 +29,7 @@ if (!mongoose.models.Item) {
       cantidad: { type: Number, default: 1, required: true },
       imagenes: [{ type: String }],
       arrendadoPor: { type: String, default: null },
+      accion: { type: String, default: "actualizado" },
     },
     {
       timestamps: true, // ✅ Agrega esto
@@ -159,6 +160,7 @@ export async function PUT(req) {
         targetItem.arrendadoPor = arrendadoPor;
       }
 
+      targetItem.accion = "actualizado";
       await targetItem.save();
     } else {
       targetItem = new Item({
@@ -168,6 +170,7 @@ export async function PUT(req) {
         estado: nuevoEstado,
         cantidad: cantidadNumerica,
         imagenes,
+        accion: "movido",
         ...(nuevoEstado === "arriendo" && arrendadoPor ? { arrendadoPor } : {}),
       });
       await targetItem.save();

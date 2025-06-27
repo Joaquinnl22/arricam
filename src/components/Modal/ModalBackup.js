@@ -28,14 +28,20 @@ const ModalCambios = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4 overflow-auto">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-3xl text-gray-800 relative max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-6 text-center">🕑 Historial de Cambios</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          🕑 Historial de Cambios
+        </h2>
 
         {loading ? (
-          <div className="text-center text-gray-500 animate-pulse">Cargando cambios...</div>
+          <div className="text-center text-gray-500 animate-pulse">
+            Cargando cambios...
+          </div>
         ) : error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : cambios.length === 0 ? (
-          <div className="text-center text-gray-500">No hay cambios recientes.</div>
+          <div className="text-center text-gray-500">
+            No hay cambios recientes.
+          </div>
         ) : (
           <ul className="divide-y divide-gray-200">
             {cambios.map((item) => (
@@ -45,11 +51,19 @@ const ModalCambios = ({ isOpen, onClose }) => {
                     <p className="font-semibold text-lg">{item.title}</p>
                     <p className="text-sm text-gray-600">{item.descripcion}</p>
                     <p className="text-xs text-gray-400">
-                      Estado: <span className="font-medium">{item.estado}</span> | Cantidad: {item.cantidad}
+                      Acción:{" "}
+                      <span className="font-medium">{item.accion || "—"}</span>{" "}
+                      | Estado:{" "}
+                      <span className="font-medium">{item.estado}</span> |
+                      Cantidad: {item.cantidad}
                     </p>
                   </div>
+
                   <div className="text-xs text-gray-500 mt-2 sm:mt-0 sm:text-right">
-                    {new Date(item.updatedAt).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}
+                    {new Date(item.updatedAt).toLocaleString("es-ES", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </div>
                 </div>
               </li>
