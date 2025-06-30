@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-export default function NavBar({ onAddClick, onFilterChange,onBackupClick }) {
+export default function NavBar({ onAddClick, onFilterChange, onBackupClick }) {
   const router = useRouter();
 
   const handleFilterChange = (e) => {
@@ -21,7 +21,7 @@ export default function NavBar({ onAddClick, onFilterChange,onBackupClick }) {
       {/* Logo */}
       <h1
         className="text-xl sm:text-3xl font-bold tracking-wider cursor-pointer mb-2 sm:mb-0"
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/protegido")}
       >
         ARRICAM
       </h1>
@@ -52,7 +52,7 @@ export default function NavBar({ onAddClick, onFilterChange,onBackupClick }) {
         >
           + Agregar Ítem
         </button>
-                {/* Botón Backup */}
+        {/* Botón Backup */}
         <button
           onClick={onBackupClick}
           className="w-full sm:w-auto bg-yellow-400 hover:bg-blue-300 text-black px-4 py-2 rounded-md shadow-lg transition transform hover:scale-105"
