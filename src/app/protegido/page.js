@@ -7,6 +7,7 @@ import NotificationModal from "../../components/Modal/ModalNotificacion";
 
 import {
   FaToilet,
+  FaShower,
   FaWarehouse,
   FaBuilding,
   FaUtensils,
@@ -35,6 +36,7 @@ async function notifyUser(title, body) {
 export default function Home() {
   const [items, setItems] = useState({
     baños: [],
+    bañosEspeciales: [],
     BOD40: [],
     BOD20: [],
     oficinas: [],
@@ -231,6 +233,7 @@ export default function Home() {
 
       setItems({
         baños: groupedItems.baño || [],
+        bañosEspeciales: groupedItems.bañoEspecial || [],
         BOD20: groupedItems.BOD20 || [],
         BOD40: groupedItems.BOD40 || [],
         oficinas: groupedItems.oficina || [],
@@ -630,7 +633,7 @@ export default function Home() {
           <div className="bg-white rounded-xl shadow-md p-4 mb-6">
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center text-center">
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">
-                Items
+                Modulos
               </h3>
               <h3 className="text-lg sm:text-xl font-bold text-green-600">
                 Disponible para arriendo
@@ -651,6 +654,7 @@ export default function Home() {
             {renderBlock("Oficinas", items.oficinas, FaBuilding)}
             {renderBlock("Oficinas con baño", items.oficinasconbaño, ImOffice)}
             {renderBlock("Baños", items.baños, FaToilet)}
+            {renderBlock("BañosEspeciales", items.bañosEspeciales, FaShower)}
             {renderBlock("Comedores", items.comedores, FaUtensils)}
             {renderBlock("Camarines", items.camarines, FaUsers)}
             {renderBlock("Guardias", items.guardias, FaShieldAlt)}

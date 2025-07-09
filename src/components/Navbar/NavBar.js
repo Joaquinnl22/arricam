@@ -35,6 +35,7 @@ export default function NavBar({ onAddClick, onFilterChange, onBackupClick }) {
         >
           <option value="">Todos</option>
           <option value="baño">Baños</option>
+          <option value="bañoEspecial">Baños Especiales</option>
           <option value="BOD20">BOD20</option>
           <option value="BOD40">BOD40</option>
           <option value="oficina">Oficinas (OPL)</option>
@@ -50,7 +51,7 @@ export default function NavBar({ onAddClick, onFilterChange, onBackupClick }) {
           onClick={onAddClick}
           className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-300 text-black px-4 py-2 rounded-md shadow-lg transition transform hover:scale-105"
         >
-          + Agregar Ítem
+          + Agregar Modulo
         </button>
         {/* Botón Backup */}
         <button

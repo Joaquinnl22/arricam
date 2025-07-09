@@ -75,6 +75,7 @@ const ModalAgregar = ({ isOpen, onClose, onSave }) => {
             >
               <option value="" disabled>Seleccione un tipo</option>
               <option value="baño">Baño</option>
+              <option value="bañoEspecial">Baño Especiales</option>
               <option value="oficina">Oficina</option>
               <option value="oficina con baño">Oficina con baño</option>
               <option value="BOD20">BOD20</option>
