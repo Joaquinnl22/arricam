@@ -12,6 +12,7 @@ export async function GET() {
     // Excluir la fecha de hoy en la búsqueda
     const summaries = await GlobalSummary.find({ date: { $lt: todayISO } })
       .sort({ date: -1 })
+      .skip(1)
       .limit(1)
       .lean();
 
