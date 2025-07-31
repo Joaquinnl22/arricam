@@ -49,15 +49,18 @@ export default function RegistroTrabajoPage() {
       nombre: 'Estructura',
       icono: FaCog,
       acciones: {
-        'Instalación estructuras': 25000,
-        'Soldadura refuerzos': 20000,
-        'Mantención equipos': 15000,
-        'Reparación estructuras': 18000,
-        'Inspección soldaduras': 12000,
-        'Montaje andamios': 16000,
-        'Limpieza maquinaria': 10000,
-        'Bono por disposición': 20000,
-        'Otros': 15000
+        'Instalación estructuras': 2000,
+        'Soldadura refuerzos': 2000,
+        'Mantención equipos': 1000,
+        'Reparación estructuras': 1000,
+        'Pintura': 1000,
+        'Carpinteria': 1000,
+        'Gafiter': 1000,
+        'Prueba de equipos': 1000,
+        'Salida a terreno': 1000,
+        'Limpieza maquinaria': 1000,
+        'Bono por disposición': 2000,
+        'Otros': 1000
 
       }
     },
@@ -65,15 +68,15 @@ export default function RegistroTrabajoPage() {
       nombre: 'Pintura',
       icono: FaPaintBrush,
       acciones: {
-        'Preparación superficies': 12000,
-        'Aplicación primer': 14000,
-        'Pintura brocha': 16000,
-        'Pintura rodillo': 15000,
-        'Pintura pistola': 18000,
-        'Retoque áreas': 10000,
-        'Lijado y pulido': 13000,
-        'Bono por disposición': 20000,
-        'Otros': 15000
+        'Preparación superficies': 1000,
+        'Aplicación primer': 1000,
+        'Pintura brocha': 1000,
+        'Pintura Silicona': 1000,
+        'Pintura pistola': 1000,
+        'Retoque áreas': 1000,
+        'Pintura sodimac': 1000,
+        'Bono por disposición': 2000,
+        'Otros': 1000
 
       }
     },
@@ -81,16 +84,18 @@ export default function RegistroTrabajoPage() {
       nombre: 'Carpintería',
       icono: FaHammer,
       acciones: {
-        'Carpinteria': 15000,
-        'Reparación': 20000,
-        'Revisión camaras': 18000,
-        'Terminaciones': 16000,
-        'Salida a terreno': 22000,
-        'Instalación luz': 14000,
-        'Sitio': 17000,
-        'Mantención': 10000,
-        'Bono por disposición': 20000,
-        'Otros': 15000
+        'Carpinteria': 1000,
+        'Reparación': 2000,
+        'Gafiter': 1000,
+        'Revisión camaras': 1000,
+        'Terminaciones': 1000,
+        'Salida a terreno': 2000,
+        'Electricidad': 1000,
+        'Instalación luz': 1000,
+        'Sitio': 1000,
+        'Mantención': 1000,
+        'Bono por disposición': 2000,
+        'Otros': 1000
       }
     }
   };
@@ -853,7 +858,7 @@ export default function RegistroTrabajoPage() {
                       <option value="">Seleccionar acción</option>
                       {Object.entries(tiposTrabajo[formData.tipoTrabajo]?.acciones || {}).map(([accion, monto]) => (
                         <option key={accion} value={accion}>
-                          {accion} - ${monto.toLocaleString()}/h
+                          {accion}
                         </option>
                       ))}
                     </select>
