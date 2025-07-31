@@ -31,8 +31,7 @@ export default function RegistroTrabajoPage() {
   const [filtros, setFiltros] = useState({
     trabajador: '',
     tipoTrabajo: '',
-    fechaInicio: '',
-    fechaFin: '',
+    fecha: '',
     busqueda: ''
   });
   
@@ -124,12 +123,8 @@ export default function RegistroTrabajoPage() {
       filtered = filtered.filter(r => r.tipoTrabajo === filtros.tipoTrabajo);
     }
     
-    if (filtros.fechaInicio) {
-      filtered = filtered.filter(r => r.fecha >= filtros.fechaInicio);
-    }
-    
-    if (filtros.fechaFin) {
-      filtered = filtered.filter(r => r.fecha <= filtros.fechaFin);
+    if (filtros.fecha) {
+      filtered = filtered.filter(r => r.fecha === filtros.fecha);
     }
     
     if (filtros.busqueda) {
@@ -149,7 +144,7 @@ export default function RegistroTrabajoPage() {
     const inicioMinutos = horaI * 60 + minI;
     const finMinutos = horaF * 60 + minF;
     
-    return (finMinutos - inicioMinutos) / 60;
+    return Math.round(((finMinutos - inicioMinutos) / 60) * 100) / 100; // Redondear a 2 decimales
   };
 
   const verificarConflictoHorario = (trabajadorId, fecha, horaInicio, horaFin, excludeId = null) => {
@@ -303,76 +298,43 @@ export default function RegistroTrabajoPage() {
     }));
   };
 
-  const calcularTotalMes = () => {
-    const fechaActual = new Date();
-    const mesActual = fechaActual.getMonth();
-    const añoActual = fechaActual.getFullYear();
-    
-    const registrosMes = registros.filter(r => {
-      const fechaRegistro = new Date(r.fecha);
-      return fechaRegistro.getMonth() === mesActual && fechaRegistro.getFullYear() === añoActual;
-    });
-    
-    return {
-      horas: registrosMes.reduce((sum, r) => sum + r.horasTrabajadas, 0),
-      monto: registrosMes.reduce((sum, r) => sum + r.totalPago, 0)
-    };
-  };
-
-  const totalMes = calcularTotalMes();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-2 sm:p-3">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-black text-amber-400 rounded-xl shadow-2xl p-6 mb-6 border border-amber-400/20">
+      <div className="bg-gradient-to-r from-slate-800 to-gray-900 text-blue-300 rounded-xl shadow-2xl p-4 sm:p-6 mb-4 sm:mb-6 border border-blue-400/20 backdrop-blur-sm">
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-300 to-indigo-300 bg-clip-text text-transparent">
               Registro de Trabajo
             </h1>
-            <button
-              onClick={() => setMostrarMontos(!mostrarMontos)}
-              className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold hover:from-amber-600 hover:to-yellow-600 transition-all duration-200 shadow-lg"
-            >
-              {mostrarMontos ? <FaEyeSlash /> : <FaEye />}
-              {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
-            </button>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="text-sm space-y-1">
-              <div className="flex items-center gap-2">
-                <FaClock className="text-amber-400" />
-                <span>Horas del mes: </span>
-                <span className="font-bold text-lg text-amber-300">{totalMes.horas}h</span>
-              </div>
-              {mostrarMontos && (
-                <div className="flex items-center gap-2">
-                  <FaDollarSign className="text-amber-400" />
-                  <span>Total: </span>
-                  <span className="font-bold text-lg text-amber-300">${totalMes.monto.toLocaleString()}</span>
-                </div>
-              )}
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setMostrarMontos(!mostrarMontos)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg flex-1 sm:flex-none"
+              >
+                {mostrarMontos ? <FaEyeSlash /> : <FaEye />}
+                {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
+              </button>
+              <button
+                onClick={() => setIsAgregarOpen(true)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg transform hover:scale-105 flex-1 sm:flex-none"
+              >
+                <FaPlus /> Nuevo
+              </button>
             </div>
-            <button
-              onClick={() => setIsAgregarOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black px-6 py-3 rounded-xl flex items-center gap-2 font-semibold hover:from-amber-600 hover:to-yellow-600 transition-all duration-200 shadow-lg transform hover:scale-105"
-            >
-              <FaPlus /> Nuevo Registro
-            </button>
           </div>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white/90 backdrop-blur-sm border border-amber-200 rounded-xl p-6 mb-6 shadow-lg">
+      <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-lg flex items-center gap-2 text-gray-800">
-            <FaFilter className="text-amber-600" /> Filtros
+            <FaFilter className="text-blue-600" /> Filtros
           </h2>
           <button
             onClick={() => setShowFiltros(!showFiltros)}
-            className="text-amber-600 font-medium hover:text-amber-700 transition-colors"
+            className="text-blue-600 font-medium hover:text-blue-700 transition-colors"
           >
             {showFiltros ? 'Ocultar' : 'Mostrar'}
           </button>
@@ -380,11 +342,11 @@ export default function RegistroTrabajoPage() {
         
         {showFiltros && (
           <div className="grid gap-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <select
                 value={filtros.trabajador}
                 onChange={(e) => setFiltros(prev => ({ ...prev, trabajador: e.target.value }))}
-                className="border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white/80"
+                className="border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white/80"
               >
                 <option value="">Todos los trabajadores</option>
                 {trabajadores.map(t => (
@@ -395,7 +357,7 @@ export default function RegistroTrabajoPage() {
               <select
                 value={filtros.tipoTrabajo}
                 onChange={(e) => setFiltros(prev => ({ ...prev, tipoTrabajo: e.target.value }))}
-                className="border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white/80"
+                className="border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white/80"
               >
                 <option value="">Todas las especialidades</option>
                 {Object.entries(tiposTrabajo).map(([key, tipo]) => (
@@ -404,30 +366,23 @@ export default function RegistroTrabajoPage() {
               </select>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="date"
-                value={filtros.fechaInicio}
-                onChange={(e) => setFiltros(prev => ({ ...prev, fechaInicio: e.target.value }))}
-                className="border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white/80"
-                placeholder="Fecha inicio"
-              />
-              <input
-                type="date"
-                value={filtros.fechaFin}
-                onChange={(e) => setFiltros(prev => ({ ...prev, fechaFin: e.target.value }))}
-                className="border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white/80"
-                placeholder="Fecha fin"
+                value={filtros.fecha}
+                onChange={(e) => setFiltros(prev => ({ ...prev, fecha: e.target.value }))}
+                className="border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white/80"
+                placeholder="Fecha específica"
               />
             </div>
             
             <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-500" />
+              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500" />
               <input
                 type="text"
                 value={filtros.busqueda}
                 onChange={(e) => setFiltros(prev => ({ ...prev, busqueda: e.target.value }))}
-                className="border-2 border-amber-200 rounded-lg px-12 py-3 w-full focus:border-amber-500 focus:outline-none bg-white/80"
+                className="border-2 border-blue-200 rounded-lg px-12 py-3 w-full focus:border-blue-500 focus:outline-none bg-white/80"
                 placeholder="Buscar en acciones y observaciones..."
               />
             </div>
@@ -436,14 +391,14 @@ export default function RegistroTrabajoPage() {
       </div>
 
       {/* Lista de registros */}
-      <div className="bg-white/90 backdrop-blur-sm border border-amber-200 rounded-xl p-6 shadow-lg">
+      <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-xl p-4 sm:p-6 shadow-lg">
         <h2 className="font-bold text-lg mb-6 text-gray-800">
           Historial de Trabajos ({filteredRegistros.length} registros)
         </h2>
         
         {loading ? (
           <div className="flex justify-center py-12">
-            <FaSpinner className="text-amber-600 text-3xl animate-spin" />
+            <FaSpinner className="text-blue-600 text-3xl animate-spin" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -452,30 +407,30 @@ export default function RegistroTrabajoPage() {
               const IconoTipo = tipoConfig?.icono || FaCog;
               
               return (
-                <div key={registro.id} className="border-2 border-amber-100 rounded-xl p-4 bg-gradient-to-r from-amber-50 to-yellow-50 hover:shadow-md transition-all duration-200">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-gray-800 text-amber-400 p-2 rounded-lg">
+                <div key={registro.id} className="border-2 border-blue-100 rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-all duration-200">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <div className="bg-slate-700 text-blue-300 p-2 rounded-lg">
                           <FaUser />
                         </div>
                         <span className="font-bold text-lg text-gray-800">{registro.trabajadorNombre}</span>
-                        <div className="bg-amber-500 text-white p-2 rounded-lg">
+                        <div className="bg-blue-500 text-white p-2 rounded-lg">
                           <IconoTipo />
                         </div>
-                        <span className="text-amber-700 font-medium">{tipoConfig?.nombre}</span>
+                        <span className="text-blue-700 font-medium">{tipoConfig?.nombre}</span>
                       </div>
                       
                       <div className="text-sm text-gray-600 mb-2 flex flex-wrap gap-4">
                         <div className="flex items-center gap-2">
-                          <FaCalendarAlt className="text-amber-600" />
+                          <FaCalendarAlt className="text-blue-600" />
                           <span className="font-medium">{registro.fecha}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <FaClock className="text-amber-600" />
+                          <FaClock className="text-blue-600" />
                           <span className="font-medium">{registro.horaInicio} - {registro.horaFin}</span>
-                          <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-bold">
-                            {registro.horasTrabajadas}h
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
+                            {registro.horasTrabajadas.toFixed(2)}h
                           </span>
                         </div>
                       </div>
@@ -491,7 +446,7 @@ export default function RegistroTrabajoPage() {
                       )}
                       
                       {mostrarMontos && (
-                        <div className="mt-3 bg-gradient-to-r from-gray-800 to-black text-amber-400 px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 shadow-lg">
+                        <div className="mt-3 bg-gradient-to-r from-slate-700 to-gray-800 text-blue-300 px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2 shadow-lg">
                           <FaDollarSign />
                           <span>${registro.montoAccion.toLocaleString()}/h</span>
                           <span>→</span>
@@ -500,10 +455,10 @@ export default function RegistroTrabajoPage() {
                       )}
                     </div>
                     
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 self-end sm:self-start">
                       <button
                         onClick={() => handleEdit(registro)}
-                        className="text-amber-600 hover:bg-amber-100 p-3 rounded-lg transition-colors"
+                        className="text-blue-600 hover:bg-blue-100 p-3 rounded-lg transition-colors"
                       >
                         <FaEdit size={16} />
                       </button>
@@ -533,8 +488,8 @@ export default function RegistroTrabajoPage() {
       {/* Modal */}
       {(isAgregarOpen || isEditarOpen) && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white border-2 border-amber-200 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
+          <div className="bg-white border-2 border-blue-200 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-4 sm:p-6">
               <h3 className="text-xl font-bold mb-6 text-gray-800">
                 {isEditarOpen ? 'Editar' : 'Nuevo'} Registro de Trabajo
               </h3>
@@ -545,7 +500,7 @@ export default function RegistroTrabajoPage() {
                   <select
                     value={formData.trabajadorId}
                     onChange={onTrabajadorChange}
-                    className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                   >
                     <option value="">Seleccionar trabajador</option>
                     {trabajadores.map(t => (
@@ -562,7 +517,7 @@ export default function RegistroTrabajoPage() {
                     type="date"
                     value={formData.fecha}
                     onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
-                    className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                   />
                 </div>
                 
@@ -573,7 +528,7 @@ export default function RegistroTrabajoPage() {
                       type="time"
                       value={formData.horaInicio}
                       onChange={(e) => setFormData(prev => ({ ...prev, horaInicio: e.target.value }))}
-                      className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                     />
                   </div>
                   <div>
@@ -582,7 +537,7 @@ export default function RegistroTrabajoPage() {
                       type="time"
                       value={formData.horaFin}
                       onChange={(e) => setFormData(prev => ({ ...prev, horaFin: e.target.value }))}
-                      className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                     />
                   </div>
                 </div>
@@ -607,7 +562,7 @@ export default function RegistroTrabajoPage() {
                     <select
                       value={formData.accionRealizada}
                       onChange={onAccionChange}
-                      className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                     >
                       <option value="">Seleccionar acción</option>
                       {Object.entries(tiposTrabajo[formData.tipoTrabajo]?.acciones || {}).map(([accion, monto]) => (
@@ -626,7 +581,7 @@ export default function RegistroTrabajoPage() {
                       type="number"
                       value={formData.montoAccion}
                       onChange={(e) => setFormData(prev => ({ ...prev, montoAccion: Number(e.target.value) }))}
-                      className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                     />
                   </div>
                 )}
@@ -637,26 +592,26 @@ export default function RegistroTrabajoPage() {
                     value={formData.observaciones}
                     onChange={(e) => setFormData(prev => ({ ...prev, observaciones: e.target.value }))}
                     rows={3}
-                    className="w-full border-2 border-amber-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none bg-white"
+                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
                     placeholder="Detalles adicionales del trabajo realizado..."
                   />
                 </div>
                 
                 {formData.horaInicio && formData.horaFin && formData.montoAccion > 0 && !conflictoHorario && (
-                  <div className="bg-gradient-to-r from-gray-800 to-black text-amber-400 p-4 rounded-lg shadow-lg">
+                  <div className="bg-gradient-to-r from-slate-700 to-gray-800 text-blue-300 p-4 rounded-lg shadow-lg">
                     <div className="text-sm space-y-1">
                       <div className="flex justify-between">
                         <span>Horas trabajadas:</span>
-                        <span className="font-bold">{calcularHoras(formData.horaInicio, formData.horaFin).toFixed(1)}h</span>
+                        <span className="font-bold">{calcularHoras(formData.horaInicio, formData.horaFin).toFixed(2)}h</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Monto por hora:</span>
                         <span className="font-bold">${formData.montoAccion.toLocaleString()}</span>
                       </div>
-                      <hr className="border-amber-600/30" />
+                      <hr className="border-blue-600/30" />
                       <div className="flex justify-between text-lg">
                         <span>Total a pagar:</span>
-                        <span className="font-bold text-amber-300">
+                        <span className="font-bold text-blue-300">
                           ${(calcularHoras(formData.horaInicio, formData.horaFin) * formData.montoAccion).toLocaleString()}
                         </span>
                       </div>
@@ -677,7 +632,7 @@ export default function RegistroTrabajoPage() {
                     className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
                       conflictoHorario 
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black'
+                        : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white'
                     }`}
                   >
                     {isEditarOpen ? 'Actualizar' : 'Guardar'} Registro
