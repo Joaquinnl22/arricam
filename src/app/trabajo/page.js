@@ -7,7 +7,7 @@ export default function RegistroTrabajoPage() {
   const [registros, setRegistros] = useState([]);
   const [filteredRegistros, setFilteredRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mostrarMontos, setMostrarMontos] = useState(true);
+  const [mostrarMontos, setMostrarMontos] = useState(false);
   
   // Estados para los modales
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
