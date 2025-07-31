@@ -31,7 +31,7 @@ export default function RegistroTrabajoPage() {
   const [filtros, setFiltros] = useState({
     trabajador: '',
     tipoTrabajo: '',
-    fecha: '',
+    fecha: new Date().toISOString().split('T')[0], // Fecha actual por defecto
     mes: '',
     busqueda: ''
   });

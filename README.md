@@ -287,9 +287,104 @@ Genera PDF de bonos de producción.
 - **Eliminar**: Hacer clic en el ícono de eliminar
 - **Ver montos**: Usar el botón "Mostrar $" / "Ocultar $"
 
-## 📊 Estructura de Datos
+## 🔄 Diagrama de Flujo - Página de Trabajo
 
-### Modelo Trabajo (MongoDB)
+```mermaid
+graph TD
+    A[Usuario accede a /trabajo] --> B[Cargar página]
+    B --> C[useEffect: cargarRegistros()]
+    C --> D[GET /api/trabajo]
+    D --> E{API responde?}
+    E -->|Sí| F[setRegistros(data)]
+    E -->|No| G[Mostrar error]
+    F --> H[Renderizar lista de registros]
+    G --> H
+    
+    H --> I[Usuario interactúa]
+    
+    %% Crear nuevo registro
+    I -->|"Nuevo"| J[Abrir modal de creación]
+    J --> K[Llenar formulario]
+    K --> L[Validar datos]
+    L -->|Válido| M[POST /api/trabajo]
+    L -->|Inválido| N[Mostrar error]
+    M --> O{API responde?}
+    O -->|Sí| P[Cerrar modal + recargar datos]
+    O -->|No| Q[Mostrar error]
+    
+    %% Editar registro
+    I -->|"Editar"| R[Abrir modal de edición]
+    R --> S[Cargar datos del registro]
+    S --> T[PUT /api/trabajo/[id]]
+    T --> U{API responde?}
+    U -->|Sí| V[Actualizar lista]
+    U -->|No| W[Mostrar error]
+    
+    %% Eliminar registro
+    I -->|"Eliminar"| X[Confirmar eliminación]
+    X -->|Sí| Y[DELETE /api/trabajo/[id]]
+    X -->|No| Z[Cancelar]
+    Y --> AA{API responde?}
+    AA -->|Sí| BB[Recargar datos]
+    AA -->|No| CC[Mostrar error]
+    
+    %% Filtros
+    I -->|"Aplicar filtros"| DD[Actualizar estado filtros]
+    DD --> EE[useEffect: aplicar filtros]
+    EE --> FF[Filtrar registros locales]
+    FF --> GG[Mostrar registros filtrados]
+    
+    %% Generar PDF
+    I -->|"Bonos"| HH[Abrir preview de bonos]
+    HH --> II[prepararDatosBonos()]
+    II --> JJ[Agrupar por trabajador]
+    JJ --> KK[Agrupar por acción]
+    KK --> LL[Calcular totales]
+    LL --> MM[Mostrar preview editable]
+    MM --> NN[Usuario edita datos]
+    NN --> OO[GenerarBonosPDF()]
+    OO --> PP[POST https://arricam-pdf-service.onrender.com/api/generatebonos]
+    PP --> QQ{API externa responde?}
+    QQ -->|Sí| RR[Descargar PDF]
+    QQ -->|No| SS[Mostrar error]
+    
+    %% Estados de carga
+    P --> TT[setLoading(false)]
+    V --> TT
+    BB --> TT
+    RR --> TT
+    
+    style A fill:#e1f5fe
+    style D fill:#f3e5f5
+    style M fill:#f3e5f5
+    style T fill:#f3e5f5
+    style Y fill:#f3e5f5
+    style PP fill:#fff3e0
+    style TT fill:#e8f5e8
+```
+
+### 🔄 Flujo de Datos
+
+#### 📥 **Entrada de Datos**
+1. **Carga inicial**: GET /api/trabajo
+2. **Crear**: POST /api/trabajo
+3. **Actualizar**: PUT /api/trabajo/[id]
+4. **Eliminar**: DELETE /api/trabajo/[id]
+5. **Generar PDF**: POST API externa
+
+#### 📤 **Salida de Datos**
+- **Lista de registros**: Renderizado en tiempo real
+- **Filtros aplicados**: Cálculos locales
+- **Preview de bonos**: Datos agrupados
+- **PDF generado**: Descarga automática
+
+#### 🔄 **Estados de la Aplicación**
+- **Loading**: Durante operaciones de API
+- **Error**: Manejo de errores de red
+- **Success**: Confirmaciones de operaciones
+- **Filtered**: Datos filtrados localmente
+
+## 📊 Estructura de Datos
 ```javascript
 {
   trabajadorId: String,
