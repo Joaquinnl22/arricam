@@ -32,6 +32,7 @@ export default function RegistroTrabajoPage() {
     trabajador: '',
     tipoTrabajo: '',
     fecha: '',
+    mes: '',
     busqueda: ''
   });
   
@@ -71,13 +72,14 @@ export default function RegistroTrabajoPage() {
       nombre: 'Carpintería',
       icono: FaHammer,
       acciones: {
-        'Corte madera': 15000,
-        'Ensamblaje estructuras': 20000,
-        'Instalación marcos': 18000,
-        'Reparación puertas': 16000,
-        'Fabricación muebles': 22000,
-        'Lijado acabados': 14000,
-        'Instalación revestimientos': 17000
+        'Carpinteria': 15000,
+        'Reparación': 20000,
+        'Revisión camaras': 18000,
+        'Terminaciones': 16000,
+        'Salida a terreno': 22000,
+        'Instalación luz': 14000,
+        'Sitio': 17000,
+        'Mantención': 10000,
       }
     }
   };
@@ -132,6 +134,16 @@ export default function RegistroTrabajoPage() {
     
     if (filtros.fecha) {
       filtered = filtered.filter(r => r.fecha === filtros.fecha);
+    }
+    
+    if (filtros.mes) {
+      filtered = filtered.filter(r => {
+        const fechaRegistro = new Date(r.fecha);
+        const mesRegistro = fechaRegistro.getMonth() + 1; // getMonth() devuelve 0-11
+        const añoRegistro = fechaRegistro.getFullYear();
+        const [mesFiltro, añoFiltro] = filtros.mes.split('-');
+        return mesRegistro === parseInt(mesFiltro) && añoRegistro === parseInt(añoFiltro);
+      });
     }
     
     if (filtros.busqueda) {
@@ -354,6 +366,11 @@ export default function RegistroTrabajoPage() {
     }));
   };
 
+  // Calcular total filtrado
+  const calcularTotalFiltrado = () => {
+    return filteredRegistros.reduce((total, registro) => total + registro.totalPago, 0);
+  };
+
   // Función para generar bonos de producción
   const generarBonosPDF = async () => {
     try {
@@ -418,49 +435,67 @@ export default function RegistroTrabajoPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-2 sm:p-3">
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-800 to-gray-900 text-blue-300 rounded-xl shadow-2xl p-4 sm:p-6 mb-4 sm:mb-6 border border-blue-400/20 backdrop-blur-sm">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-300 to-indigo-300 bg-clip-text text-transparent">
-              Registro de Trabajo
-            </h1>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <button
-                onClick={() => setMostrarMontos(!mostrarMontos)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg flex-1 sm:flex-none"
-              >
-                {mostrarMontos ? <FaEyeSlash /> : <FaEye />}
-                {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
-              </button>
-              <button
-                onClick={generarBonosPDF}
-                disabled={generandoBonos}
-                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold transition-all duration-200 shadow-lg flex-1 sm:flex-none ${
-                  generandoBonos 
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
-                }`}
-              >
-                {generandoBonos ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    Generando...
-                  </>
-                ) : (
-                  <>
-                    <FaDownload />
-                    Bonos
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => setIsAgregarOpen(true)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg transform hover:scale-105 flex-1 sm:flex-none"
-              >
-                <FaPlus /> Nuevo
-              </button>
+                  <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-300 to-indigo-300 bg-clip-text text-transparent">
+                Registro de Trabajo
+              </h1>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => setMostrarMontos(!mostrarMontos)}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg flex-1 sm:flex-none"
+                >
+                  {mostrarMontos ? <FaEyeSlash /> : <FaEye />}
+                  {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
+                </button>
+                <button
+                  onClick={generarBonosPDF}
+                  disabled={generandoBonos}
+                  className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold transition-all duration-200 shadow-lg flex-1 sm:flex-none ${
+                    generandoBonos 
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                  }`}
+                >
+                  {generandoBonos ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload />
+                      Bonos
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsAgregarOpen(true)}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-lg transform hover:scale-105 flex-1 sm:flex-none"
+                >
+                  <FaPlus /> Nuevo
+                </button>
+              </div>
             </div>
+            
+            {/* Total filtrado */}
+            {mostrarMontos && (
+              <div className="bg-gradient-to-r from-slate-700 to-gray-800 text-blue-300 px-4 py-3 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FaDollarSign className="text-blue-400" />
+                    <span className="font-semibold">Total filtrado:</span>
+                  </div>
+                  <span className="font-bold text-xl text-blue-200">
+                    ${calcularTotalFiltrado().toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-sm text-blue-300 mt-1">
+                  {filteredRegistros.length} registro{filteredRegistros.length !== 1 ? 's' : ''} encontrado{filteredRegistros.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
       </div>
 
       {/* Filtros */}
@@ -510,6 +545,13 @@ export default function RegistroTrabajoPage() {
                 onChange={(e) => setFiltros(prev => ({ ...prev, fecha: e.target.value }))}
                 className="border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white/80"
                 placeholder="Fecha específica"
+              />
+              <input
+                type="month"
+                value={filtros.mes}
+                onChange={(e) => setFiltros(prev => ({ ...prev, mes: e.target.value }))}
+                className="border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white/80"
+                placeholder="Mes específico"
               />
             </div>
             
