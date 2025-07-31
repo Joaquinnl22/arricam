@@ -54,7 +54,9 @@ export default function RegistroTrabajoPage() {
         'Reparación estructuras': 18000,
         'Inspección soldaduras': 12000,
         'Montaje andamios': 16000,
-        'Limpieza maquinaria': 10000
+        'Limpieza maquinaria': 10000,
+        'Bono por disposición': 20000
+
       }
     },
     'pintura': {
@@ -67,7 +69,9 @@ export default function RegistroTrabajoPage() {
         'Pintura rodillo': 15000,
         'Pintura pistola': 18000,
         'Retoque áreas': 10000,
-        'Lijado y pulido': 13000
+        'Lijado y pulido': 13000,
+        'Bono por disposición': 20000
+
       }
     },
     'carpinteria': {
@@ -82,6 +86,7 @@ export default function RegistroTrabajoPage() {
         'Instalación luz': 14000,
         'Sitio': 17000,
         'Mantención': 10000,
+        'Bono por disposición': 20000
       }
     }
   };
@@ -89,12 +94,12 @@ export default function RegistroTrabajoPage() {
   // Datos de trabajadores
   useEffect(() => {
     setTrabajadores([
-      { id: '1', nombre: 'ERIK', tipo: 'carpinteria' },
-      { id: '2', nombre: 'SANCHEZ', tipo: 'estructura-mantencion' },
-      { id: '3', nombre: 'CRISTINA', tipo: 'estructura-mantencion' },
-      { id: '4', nombre: 'CAMILO', tipo: 'estructura-mantencion' },
-      { id: '5', nombre: 'LUIS', tipo: 'pintura' },
-      { id: '6', nombre: 'VICTOR', tipo: 'carpinteria' }
+      { id: '1', nombre: 'ERIK', tipo: 'carpinteria', sueldoBase: 500000 },
+      { id: '2', nombre: 'SANCHEZ', tipo: 'estructura-mantencion', sueldoBase: 450000 },
+      { id: '3', nombre: 'CRISTINA', tipo: 'estructura-mantencion', sueldoBase: 450000 },
+      { id: '4', nombre: 'CAMILO', tipo: 'estructura-mantencion', sueldoBase: 450000 },
+      { id: '5', nombre: 'LUIS', tipo: 'pintura', sueldoBase: 400000 },
+      { id: '6', nombre: 'VICTOR', tipo: 'carpinteria', sueldoBase: 500000 }
     ]);
   }, []);
 
@@ -257,7 +262,7 @@ export default function RegistroTrabajoPage() {
     try {
       if (isEditarOpen) {
         // Actualizar registro existente
-        const response = await fetch(`/api/trabajo/${editItem._id}`, {
+        const response = await fetch(`https://arricam-pdf-service.onrender.com/api/trabajo/${editItem._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -275,7 +280,7 @@ export default function RegistroTrabajoPage() {
         }
       } else {
         // Crear nuevo registro
-        const response = await fetch('/api/trabajo', {
+        const response = await fetch('https://arricam-pdf-service.onrender.com/api/trabajo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -376,13 +381,15 @@ export default function RegistroTrabajoPage() {
   // Preparar datos agrupados para bonos
   const prepararDatosBonos = () => {
     // Agrupar por trabajador
-    const trabajadores = {};
+    const trabajadoresAgrupados = {};
     
     filteredRegistros.forEach(registro => {
-      if (!trabajadores[registro.trabajadorId]) {
-        trabajadores[registro.trabajadorId] = {
+      if (!trabajadoresAgrupados[registro.trabajadorId]) {
+        const trabajadorInfo = trabajadores.find(t => t.id === registro.trabajadorId);
+        trabajadoresAgrupados[registro.trabajadorId] = {
           trabajadorId: registro.trabajadorId,
           trabajadorNombre: registro.trabajadorNombre,
+          sueldoBase: trabajadorInfo?.sueldoBase || 0,
           acciones: {},
           totalPago: 0,
           dias: new Set()
@@ -390,8 +397,8 @@ export default function RegistroTrabajoPage() {
       }
       
       // Agrupar por acción dentro del trabajador
-      if (!trabajadores[registro.trabajadorId].acciones[registro.accionRealizada]) {
-        trabajadores[registro.trabajadorId].acciones[registro.accionRealizada] = {
+      if (!trabajadoresAgrupados[registro.trabajadorId].acciones[registro.accionRealizada]) {
+        trabajadoresAgrupados[registro.trabajadorId].acciones[registro.accionRealizada] = {
           accionRealizada: registro.accionRealizada,
           montoAccion: registro.montoAccion,
           totalHoras: 0,
@@ -401,7 +408,7 @@ export default function RegistroTrabajoPage() {
         };
       }
       
-      const accion = trabajadores[registro.trabajadorId].acciones[registro.accionRealizada];
+      const accion = trabajadoresAgrupados[registro.trabajadorId].acciones[registro.accionRealizada];
       accion.totalHoras += registro.horasTrabajadas;
       accion.totalPago += registro.totalPago;
       accion.dias.add(registro.fecha);
@@ -414,12 +421,12 @@ export default function RegistroTrabajoPage() {
         accion.observaciones = fechaFormateada;
       }
       
-      trabajadores[registro.trabajadorId].totalPago += registro.totalPago;
-      trabajadores[registro.trabajadorId].dias.add(registro.fecha);
+      trabajadoresAgrupados[registro.trabajadorId].totalPago += registro.totalPago;
+      trabajadoresAgrupados[registro.trabajadorId].dias.add(registro.fecha);
     });
 
     // Convertir a array y ordenar
-    return Object.values(trabajadores).map(trabajador => ({
+    return Object.values(trabajadoresAgrupados).map(trabajador => ({
       ...trabajador,
       dias: Array.from(trabajador.dias).sort(),
       diasCount: trabajador.dias.size,
@@ -452,10 +459,11 @@ export default function RegistroTrabajoPage() {
       const datosBonos = {
         mes: mes.charAt(0).toUpperCase() + mes.slice(1),
         anio: anio,
-        trabajadores: datosEditados.flatMap(trabajador => 
-          trabajador.acciones.map(accion => ({
+        trabajadores: datosEditados.flatMap(trabajador => {
+          const registrosAcciones = trabajador.acciones.map(accion => ({
             trabajadorId: trabajador.trabajadorId,
             trabajadorNombre: trabajador.trabajadorNombre,
+            sueldoBase: trabajador.sueldoBase || 0,
             tipoTrabajo: 'general',
             fecha: accion.dias.join(', '), // Fechas como string
             horaInicio: '08:00', // Hora por defecto
@@ -465,9 +473,42 @@ export default function RegistroTrabajoPage() {
             observaciones: accion.observaciones || '',
             horasTrabajadas: accion.totalHoras,
             totalPago: accion.totalPago
-          }))
-        )
+          }));
+
+          // Agregar registro de horas extras solo si tiene monto
+          if (trabajador.horasExtras && trabajador.horasExtras > 0) {
+            registrosAcciones.push({
+              trabajadorId: trabajador.trabajadorId,
+              trabajadorNombre: trabajador.trabajadorNombre,
+              sueldoBase: trabajador.sueldoBase || 0,
+              tipoTrabajo: 'general',
+              fecha: 'Horas Extras',
+              horaInicio: '00:00',
+              horaFin: '00:00',
+              accionRealizada: 'Horas Extras',
+              montoAccion: 0,
+              observaciones: `Monto adicional: $${trabajador.horasExtras.toLocaleString()}`,
+              horasTrabajadas: 0,
+              totalPago: trabajador.horasExtras
+            });
+          }
+
+          return registrosAcciones;
+        })
       };
+
+      // Log para ver los datos que se envían
+      console.log('Datos enviados al generador de PDF:', JSON.stringify(datosBonos, null, 2));
+      
+      // Log detallado de horas extras y sueldo base
+      console.log('=== DETALLE DE HORAS EXTRAS Y SUELDO BASE ===');
+      datosEditados.forEach(trabajador => {
+        console.log(`Trabajador: ${trabajador.trabajadorNombre}`);
+        console.log(`  - Sueldo Base: $${(trabajador.sueldoBase || 0).toLocaleString()}`);
+        console.log(`  - Horas Extras: $${(trabajador.horasExtras || 0).toLocaleString()}`);
+        console.log(`  - Total: $${((trabajador.totalPago || 0) + (trabajador.horasExtras || 0)).toLocaleString()}`);
+        console.log('---');
+      });
 
       const response = await fetch("https://arricam-pdf-service.onrender.com/api/generatebonos", {
         method: 'POST',
@@ -916,6 +957,25 @@ export default function RegistroTrabajoPage() {
                           className="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-blue-200 focus:border-blue-500 focus:outline-none px-2 py-1"
                         />
                       </div>
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <label className="block font-semibold mb-1 text-gray-700 text-sm">Sueldo Base</label>
+                          <input
+                            type="number"
+                            value={trabajador.sueldoBase || 0}
+                            onChange={(e) => {
+                              const nuevosDatos = [...datosPreviewBonos];
+                              nuevosDatos[trabajadorIndex].sueldoBase = Number(e.target.value);
+                              setDatosPreviewBonos(nuevosDatos);
+                            }}
+                            className="border-2 border-blue-200 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none bg-white text-sm"
+                            placeholder="Sueldo base"
+                          />
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <span className="font-semibold">Total días:</span> {trabajador.diasCount || 0}
+                        </div>
+                      </div>
                     </div>
                     
                     {/* Acciones del trabajador */}
@@ -1006,16 +1066,55 @@ export default function RegistroTrabajoPage() {
                       )}
                     </div>
                     
+                    {/* Horas Extras */}
+                    <div className="mt-4 border-2 border-orange-200 rounded-lg p-4 bg-gradient-to-r from-orange-50 to-amber-50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-orange-500 text-white p-2 rounded-lg">
+                          <FaClock />
+                        </div>
+                        <h4 className="font-semibold text-gray-800">Horas Extras</h4>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block font-semibold mb-2 text-gray-700">Monto Horas Extras</label>
+                          <input
+                            type="number"
+                            value={trabajador.horasExtras || 0}
+                            onChange={(e) => {
+                              const nuevosDatos = [...datosPreviewBonos];
+                              nuevosDatos[trabajadorIndex].horasExtras = Number(e.target.value);
+                              setDatosPreviewBonos(nuevosDatos);
+                            }}
+                            className="w-full border-2 border-orange-200 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none bg-white"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <div className="bg-orange-100 text-orange-800 px-3 py-2 rounded-lg text-sm">
+                            <span className="font-semibold">Total con extras:</span>
+                            <span className="font-bold ml-2">
+                              ${((trabajador.totalPago || 0) + (trabajador.horasExtras || 0)).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
                     {/* Total del trabajador */}
                     <div className="mt-4 bg-gradient-to-r from-slate-700 to-gray-800 text-blue-300 px-4 py-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">Total a Pagar:</span>
                         <span className="font-bold text-xl text-blue-200">
-                          ${(trabajador.totalPago || 0).toLocaleString()}
+                          ${((trabajador.totalPago || 0) + (trabajador.horasExtras || 0)).toLocaleString()}
                         </span>
                       </div>
                       <div className="text-sm text-blue-300 mt-1">
                         {trabajador.diasCount || 0} día{(trabajador.diasCount || 0) !== 1 ? 's' : ''} trabajado{(trabajador.diasCount || 0) !== 1 ? 's' : ''}
+                        {(trabajador.horasExtras || 0) > 0 && (
+                          <span className="ml-2 text-orange-300">
+                            + ${(trabajador.horasExtras || 0).toLocaleString()} extras
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
