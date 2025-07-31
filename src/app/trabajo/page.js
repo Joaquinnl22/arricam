@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaSpinner, FaPlus, FaFilter, FaCalendarAlt, FaUser, FaClock, FaSearch, FaEdit, FaTrash, FaHammer, FaPaintBrush, FaCog, FaEye, FaEyeSlash, FaDollarSign, FaExclamationTriangle } from "react-icons/fa";
+import { FaSpinner, FaPlus, FaFilter, FaCalendarAlt, FaUser, FaClock, FaSearch, FaEdit, FaTrash, FaHammer, FaPaintBrush, FaCog, FaEye, FaEyeSlash, FaDollarSign, FaExclamationTriangle, FaDownload } from "react-icons/fa";
 
 export default function RegistroTrabajoPage() {
   const [trabajadores, setTrabajadores] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [filteredRegistros, setFilteredRegistros] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mostrarMontos, setMostrarMontos] = useState(true);
   
   // Estados para los modales
@@ -37,6 +37,7 @@ export default function RegistroTrabajoPage() {
   
   const [showFiltros, setShowFiltros] = useState(false);
   const [conflictoHorario, setConflictoHorario] = useState(null);
+  const [generandoBonos, setGenerandoBonos] = useState(false);
 
   // Configuración de tipos de trabajo y acciones con montos
   const tiposTrabajo = {
@@ -91,24 +92,30 @@ export default function RegistroTrabajoPage() {
       { id: '5', nombre: 'LUIS', tipo: 'pintura' },
       { id: '6', nombre: 'VICTOR', tipo: 'carpinteria' }
     ]);
-    
-    // Datos de ejemplo
-    setRegistros([
-      {
-        id: '1',
-        trabajadorId: '1',
-        trabajadorNombre: 'ERIK',
-        tipoTrabajo: 'carpinteria',
-        fecha: '2025-07-30',
-        horaInicio: '08:00',
-        horaFin: '12:00',
-        accionRealizada: 'Corte madera',
-        montoAccion: 15000,
-        observaciones: 'Trabajo completado',
-        horasTrabajadas: 4,
-        totalPago: 60000
+  }, []);
+
+  // Cargar registros desde la API
+  const cargarRegistros = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/trabajo');
+      const data = await response.json();
+      
+      if (data.success) {
+        setRegistros(data.data);
+      } else {
+        console.error('Error al cargar registros:', data.error);
       }
-    ]);
+    } catch (error) {
+      console.error('Error al cargar registros:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar registros al montar el componente
+  useEffect(() => {
+    cargarRegistros();
   }, []);
 
   // Aplicar filtros
@@ -151,7 +158,7 @@ export default function RegistroTrabajoPage() {
     const registrosExistentes = registros.filter(r => 
       r.trabajadorId === trabajadorId && 
       r.fecha === fecha && 
-      r.id !== excludeId
+      r._id !== excludeId
     );
 
     const inicioMinutos = convertirHoraAMinutos(horaInicio);
@@ -190,7 +197,7 @@ export default function RegistroTrabajoPage() {
         formData.fecha, 
         formData.horaInicio, 
         formData.horaFin,
-        editItem?.id
+        editItem?._id
       );
       
       setConflictoHorario(resultado.conflicto ? resultado.registroConflictivo : null);
@@ -199,7 +206,7 @@ export default function RegistroTrabajoPage() {
     }
   }, [formData.trabajadorId, formData.fecha, formData.horaInicio, formData.horaFin, registros, editItem]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.trabajadorId || !formData.fecha || !formData.horaInicio || !formData.horaFin || !formData.accionRealizada) {
       alert('Completa todos los campos obligatorios');
       return;
@@ -217,7 +224,7 @@ export default function RegistroTrabajoPage() {
       formData.fecha, 
       formData.horaInicio, 
       formData.horaFin,
-      editItem?.id
+      editItem?._id
     );
 
     if (conflicto.conflicto) {
@@ -228,19 +235,53 @@ export default function RegistroTrabajoPage() {
     const totalPago = horasTrabajadas * formData.montoAccion;
     
     const nuevoRegistro = {
-      id: Date.now().toString(),
       ...formData,
       horasTrabajadas,
       totalPago
     };
     
-    if (isEditarOpen) {
-      setRegistros(prev => prev.map(r => r.id === editItem.id ? { ...nuevoRegistro, id: editItem.id } : r));
-    } else {
-      setRegistros(prev => [...prev, nuevoRegistro]);
+    try {
+      if (isEditarOpen) {
+        // Actualizar registro existente
+        const response = await fetch(`/api/trabajo/${editItem._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(nuevoRegistro),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          await cargarRegistros(); // Recargar registros
+          handleCloseModal();
+        } else {
+          alert('Error al actualizar registro: ' + data.error);
+        }
+      } else {
+        // Crear nuevo registro
+        const response = await fetch('/api/trabajo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(nuevoRegistro),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          await cargarRegistros(); // Recargar registros
+          handleCloseModal();
+        } else {
+          alert('Error al crear registro: ' + data.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error al guardar registro:', error);
+      alert('Error al guardar registro');
     }
-    
-    handleCloseModal();
   };
 
   const handleCloseModal = () => {
@@ -267,9 +308,24 @@ export default function RegistroTrabajoPage() {
     setIsEditarOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('¿Eliminar este registro?')) {
-      setRegistros(prev => prev.filter(r => r.id !== id));
+      try {
+        const response = await fetch(`/api/trabajo/${id}`, {
+          method: 'DELETE',
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          await cargarRegistros(); // Recargar registros
+        } else {
+          alert('Error al eliminar registro: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error al eliminar registro:', error);
+        alert('Error al eliminar registro');
+      }
     }
   };
 
@@ -298,6 +354,66 @@ export default function RegistroTrabajoPage() {
     }));
   };
 
+  // Función para generar bonos de producción
+  const generarBonosPDF = async () => {
+    try {
+      setGenerandoBonos(true);
+      
+      // Obtener el mes y año actual
+      const fechaActual = new Date();
+      const mes = fechaActual.toLocaleString('es-ES', { month: 'long' });
+      const anio = fechaActual.getFullYear().toString();
+      
+      // Preparar los datos para la API
+      const datosBonos = {
+        mes: mes.charAt(0).toUpperCase() + mes.slice(1),
+        anio: anio,
+        trabajadores: registros.map(registro => ({
+          trabajadorId: registro.trabajadorId,
+          trabajadorNombre: registro.trabajadorNombre,
+          tipoTrabajo: registro.tipoTrabajo,
+          fecha: registro.fecha,
+          horaInicio: registro.horaInicio,
+          horaFin: registro.horaFin,
+          accionRealizada: registro.accionRealizada,
+          montoAccion: registro.montoAccion,
+          observaciones: registro.observaciones || '',
+          horasTrabajadas: registro.horasTrabajadas,
+          totalPago: registro.totalPago
+        }))
+      };
+
+      const response = await fetch("https://arricam-pdf-service.onrender.com/api/generatebonos", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(datosBonos)
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bonos-produccion-${datosBonos.mes}-${datosBonos.anio}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const error = await response.json();
+        console.error('Error:', error);
+        alert('Error al generar el PDF de bonos');
+      }
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF de bonos');
+    } finally {
+      setGenerandoBonos(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-2 sm:p-3">
       {/* Header */}
@@ -314,6 +430,27 @@ export default function RegistroTrabajoPage() {
               >
                 {mostrarMontos ? <FaEyeSlash /> : <FaEye />}
                 {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
+              </button>
+              <button
+                onClick={generarBonosPDF}
+                disabled={generandoBonos}
+                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold transition-all duration-200 shadow-lg flex-1 sm:flex-none ${
+                  generandoBonos 
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
+                }`}
+              >
+                {generandoBonos ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <FaDownload />
+                    Bonos
+                  </>
+                )}
               </button>
               <button
                 onClick={() => setIsAgregarOpen(true)}
@@ -407,7 +544,7 @@ export default function RegistroTrabajoPage() {
               const IconoTipo = tipoConfig?.icono || FaCog;
               
               return (
-                <div key={registro.id} className="border-2 border-blue-100 rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-all duration-200">
+                <div key={registro._id} className="border-2 border-blue-100 rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-all duration-200">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -463,7 +600,7 @@ export default function RegistroTrabajoPage() {
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(registro.id)}
+                        onClick={() => handleDelete(registro._id)}
                         className="text-red-600 hover:bg-red-100 p-3 rounded-lg transition-colors"
                       >
                         <FaTrash size={16} />
