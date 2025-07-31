@@ -260,43 +260,43 @@ export default function RegistroTrabajoPage() {
     };
     
     try {
-      if (isEditarOpen) {
-        // Actualizar registro existente
-        const response = await fetch(`https://arricam-pdf-service.onrender.com/api/trabajo/${editItem._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(nuevoRegistro),
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          await cargarRegistros(); // Recargar registros
-          handleCloseModal();
+              if (isEditarOpen) {
+          // Actualizar registro existente
+          const response = await fetch(`/api/trabajo/${editItem._id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(nuevoRegistro),
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            await cargarRegistros(); // Recargar registros
+            handleCloseModal();
+          } else {
+            alert('Error al actualizar registro: ' + data.error);
+          }
         } else {
-          alert('Error al actualizar registro: ' + data.error);
+          // Crear nuevo registro
+          const response = await fetch('/api/trabajo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(nuevoRegistro),
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            await cargarRegistros(); // Recargar registros
+            handleCloseModal();
+          } else {
+            alert('Error al crear registro: ' + data.error);
+          }
         }
-      } else {
-        // Crear nuevo registro
-        const response = await fetch('https://arricam-pdf-service.onrender.com/api/trabajo', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(nuevoRegistro),
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          await cargarRegistros(); // Recargar registros
-          handleCloseModal();
-        } else {
-          alert('Error al crear registro: ' + data.error);
-        }
-      }
     } catch (error) {
       console.error('Error al guardar registro:', error);
       alert('Error al guardar registro');
