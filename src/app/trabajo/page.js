@@ -39,6 +39,8 @@ export default function RegistroTrabajoPage() {
   const [showFiltros, setShowFiltros] = useState(false);
   const [conflictoHorario, setConflictoHorario] = useState(null);
   const [generandoBonos, setGenerandoBonos] = useState(false);
+  const [showPreviewBonos, setShowPreviewBonos] = useState(false);
+  const [datosPreviewBonos, setDatosPreviewBonos] = useState([]);
 
   // Configuración de tipos de trabajo y acciones con montos
   const tiposTrabajo = {
@@ -371,8 +373,73 @@ export default function RegistroTrabajoPage() {
     return filteredRegistros.reduce((total, registro) => total + registro.totalPago, 0);
   };
 
+  // Preparar datos agrupados para bonos
+  const prepararDatosBonos = () => {
+    // Agrupar por trabajador
+    const trabajadores = {};
+    
+    filteredRegistros.forEach(registro => {
+      if (!trabajadores[registro.trabajadorId]) {
+        trabajadores[registro.trabajadorId] = {
+          trabajadorId: registro.trabajadorId,
+          trabajadorNombre: registro.trabajadorNombre,
+          acciones: {},
+          totalPago: 0,
+          dias: new Set()
+        };
+      }
+      
+      // Agrupar por acción dentro del trabajador
+      if (!trabajadores[registro.trabajadorId].acciones[registro.accionRealizada]) {
+        trabajadores[registro.trabajadorId].acciones[registro.accionRealizada] = {
+          accionRealizada: registro.accionRealizada,
+          montoAccion: registro.montoAccion,
+          totalHoras: 0,
+          totalPago: 0,
+          dias: new Set(),
+          observaciones: ''
+        };
+      }
+      
+      const accion = trabajadores[registro.trabajadorId].acciones[registro.accionRealizada];
+      accion.totalHoras += registro.horasTrabajadas;
+      accion.totalPago += registro.totalPago;
+      accion.dias.add(registro.fecha);
+      
+      // Agregar fecha a observaciones
+      const fechaFormateada = new Date(registro.fecha).toLocaleDateString('es-ES');
+      if (accion.observaciones) {
+        accion.observaciones += `, ${fechaFormateada}`;
+      } else {
+        accion.observaciones = fechaFormateada;
+      }
+      
+      trabajadores[registro.trabajadorId].totalPago += registro.totalPago;
+      trabajadores[registro.trabajadorId].dias.add(registro.fecha);
+    });
+
+    // Convertir a array y ordenar
+    return Object.values(trabajadores).map(trabajador => ({
+      ...trabajador,
+      dias: Array.from(trabajador.dias).sort(),
+      diasCount: trabajador.dias.size,
+      acciones: Object.values(trabajador.acciones).map(accion => ({
+        ...accion,
+        dias: Array.from(accion.dias).sort(),
+        diasCount: accion.dias.size
+      })).sort((a, b) => a.accionRealizada.localeCompare(b.accionRealizada))
+    })).sort((a, b) => a.trabajadorNombre.localeCompare(b.trabajadorNombre));
+  };
+
+  // Función para abrir preview de bonos
+  const abrirPreviewBonos = () => {
+    const datosAgrupados = prepararDatosBonos();
+    setDatosPreviewBonos(datosAgrupados);
+    setShowPreviewBonos(true);
+  };
+
   // Función para generar bonos de producción
-  const generarBonosPDF = async () => {
+  const generarBonosPDF = async (datosEditados) => {
     try {
       setGenerandoBonos(true);
       
@@ -381,23 +448,25 @@ export default function RegistroTrabajoPage() {
       const mes = fechaActual.toLocaleString('es-ES', { month: 'long' });
       const anio = fechaActual.getFullYear().toString();
       
-      // Preparar los datos para la API
+      // Preparar los datos para la API usando los datos editados
       const datosBonos = {
         mes: mes.charAt(0).toUpperCase() + mes.slice(1),
         anio: anio,
-        trabajadores: registros.map(registro => ({
-          trabajadorId: registro.trabajadorId,
-          trabajadorNombre: registro.trabajadorNombre,
-          tipoTrabajo: registro.tipoTrabajo,
-          fecha: registro.fecha,
-          horaInicio: registro.horaInicio,
-          horaFin: registro.horaFin,
-          accionRealizada: registro.accionRealizada,
-          montoAccion: registro.montoAccion,
-          observaciones: registro.observaciones || '',
-          horasTrabajadas: registro.horasTrabajadas,
-          totalPago: registro.totalPago
-        }))
+        trabajadores: datosEditados.flatMap(trabajador => 
+          trabajador.acciones.map(accion => ({
+            trabajadorId: trabajador.trabajadorId,
+            trabajadorNombre: trabajador.trabajadorNombre,
+            tipoTrabajo: 'general',
+            fecha: accion.dias.join(', '), // Fechas como string
+            horaInicio: '08:00', // Hora por defecto
+            horaFin: '18:00', // Hora por defecto
+            accionRealizada: accion.accionRealizada,
+            montoAccion: accion.montoAccion,
+            observaciones: accion.observaciones || '',
+            horasTrabajadas: accion.totalHoras,
+            totalPago: accion.totalPago
+          }))
+        )
       };
 
       const response = await fetch("https://arricam-pdf-service.onrender.com/api/generatebonos", {
@@ -418,6 +487,7 @@ export default function RegistroTrabajoPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        setShowPreviewBonos(false);
       } else {
         const error = await response.json();
         console.error('Error:', error);
@@ -449,25 +519,11 @@ export default function RegistroTrabajoPage() {
                   {mostrarMontos ? 'Ocultar $' : 'Mostrar $'}
                 </button>
                 <button
-                  onClick={generarBonosPDF}
-                  disabled={generandoBonos}
-                  className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold transition-all duration-200 shadow-lg flex-1 sm:flex-none ${
-                    generandoBonos 
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600'
-                  }`}
+                  onClick={abrirPreviewBonos}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg flex-1 sm:flex-none"
                 >
-                  {generandoBonos ? (
-                    <>
-                      <FaSpinner className="animate-spin" />
-                      Generando...
-                    </>
-                  ) : (
-                    <>
-                      <FaDownload />
-                      Bonos
-                    </>
-                  )}
+                  <FaDownload />
+                  Bonos
                 </button>
                 <button
                   onClick={() => setIsAgregarOpen(true)}
@@ -817,6 +873,191 @@ export default function RegistroTrabajoPage() {
                     {isEditarOpen ? 'Actualizar' : 'Guardar'} Registro
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Preview de Bonos */}
+      {showPreviewBonos && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white border-2 border-blue-200 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">
+                  Preview de Datos para Bonos
+                </h3>
+                <button
+                  onClick={() => setShowPreviewBonos(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {datosPreviewBonos.map((trabajador, trabajadorIndex) => (
+                  <div key={trabajadorIndex} className="border-2 border-blue-100 rounded-xl p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    {/* Header del trabajador */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-slate-700 text-blue-300 p-2 rounded-lg">
+                          <FaUser />
+                        </div>
+                        <input
+                          type="text"
+                          value={trabajador.trabajadorNombre}
+                          onChange={(e) => {
+                            const nuevosDatos = [...datosPreviewBonos];
+                            nuevosDatos[trabajadorIndex].trabajadorNombre = e.target.value;
+                            setDatosPreviewBonos(nuevosDatos);
+                          }}
+                          className="text-xl font-bold text-gray-800 bg-transparent border-b-2 border-blue-200 focus:border-blue-500 focus:outline-none px-2 py-1"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Acciones del trabajador */}
+                    <div className="space-y-4">
+                      {trabajador.acciones && trabajador.acciones.length > 0 ? (
+                        trabajador.acciones.map((accion, accionIndex) => (
+                          <div key={accionIndex} className="border border-blue-200 rounded-lg p-4 bg-white/80">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block font-semibold mb-2 text-gray-700">Acción</label>
+                                <input
+                                  type="text"
+                                  value={accion.accionRealizada}
+                                  onChange={(e) => {
+                                    const nuevosDatos = [...datosPreviewBonos];
+                                    nuevosDatos[trabajadorIndex].acciones[accionIndex].accionRealizada = e.target.value;
+                                    setDatosPreviewBonos(nuevosDatos);
+                                  }}
+                                  className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                                />
+                              </div>
+                              
+                              <div>
+                                <label className="block font-semibold mb-2 text-gray-700">Monto por Hora</label>
+                                <input
+                                  type="number"
+                                  value={accion.montoAccion}
+                                  onChange={(e) => {
+                                    const nuevosDatos = [...datosPreviewBonos];
+                                    nuevosDatos[trabajadorIndex].acciones[accionIndex].montoAccion = Number(e.target.value);
+                                    nuevosDatos[trabajadorIndex].acciones[accionIndex].totalPago = nuevosDatos[trabajadorIndex].acciones[accionIndex].totalHoras * Number(e.target.value);
+                                    // Recalcular total del trabajador
+                                    nuevosDatos[trabajadorIndex].totalPago = nuevosDatos[trabajadorIndex].acciones.reduce((sum, a) => sum + a.totalPago, 0);
+                                    setDatosPreviewBonos(nuevosDatos);
+                                  }}
+                                  className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                                />
+                              </div>
+                              
+                              <div>
+                                <label className="block font-semibold mb-2 text-gray-700">Total Horas</label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={accion.totalHoras}
+                                  onChange={(e) => {
+                                    const nuevosDatos = [...datosPreviewBonos];
+                                    nuevosDatos[trabajadorIndex].acciones[accionIndex].totalHoras = Number(e.target.value);
+                                    nuevosDatos[trabajadorIndex].acciones[accionIndex].totalPago = Number(e.target.value) * nuevosDatos[trabajadorIndex].acciones[accionIndex].montoAccion;
+                                    // Recalcular total del trabajador
+                                    nuevosDatos[trabajadorIndex].totalPago = nuevosDatos[trabajadorIndex].acciones.reduce((sum, a) => sum + a.totalPago, 0);
+                                    setDatosPreviewBonos(nuevosDatos);
+                                  }}
+                                  className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="mt-3">
+                              <label className="block font-semibold mb-2 text-gray-700">Observaciones (Fechas)</label>
+                              <input
+                                type="text"
+                                value={accion.observaciones || ''}
+                                onChange={(e) => {
+                                  const nuevosDatos = [...datosPreviewBonos];
+                                  nuevosDatos[trabajadorIndex].acciones[accionIndex].observaciones = e.target.value;
+                                  setDatosPreviewBonos(nuevosDatos);
+                                }}
+                                className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                                placeholder="01/01/2024, 02/01/2024, ..."
+                              />
+                            </div>
+                            
+                            <div className="mt-3 bg-gradient-to-r from-slate-600 to-gray-700 text-blue-200 px-4 py-2 rounded-lg">
+                              <div className="flex justify-between items-center">
+                                <span className="font-semibold">Subtotal:</span>
+                                <span className="font-bold text-lg">
+                                  ${accion.totalPago.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-6 text-gray-500 bg-white/60 rounded-lg">
+                          <p>No hay acciones registradas para este trabajador</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Total del trabajador */}
+                    <div className="mt-4 bg-gradient-to-r from-slate-700 to-gray-800 text-blue-300 px-4 py-3 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">Total a Pagar:</span>
+                        <span className="font-bold text-xl text-blue-200">
+                          ${(trabajador.totalPago || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-sm text-blue-300 mt-1">
+                        {trabajador.diasCount || 0} día{(trabajador.diasCount || 0) !== 1 ? 's' : ''} trabajado{(trabajador.diasCount || 0) !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {datosPreviewBonos.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    <FaClock className="text-4xl mx-auto mb-4 opacity-50" />
+                    <p className="text-lg">No hay datos para mostrar</p>
+                    <p className="text-sm">Aplica filtros para ver los datos agrupados</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-3 pt-6">
+                <button
+                  onClick={() => setShowPreviewBonos(false)}
+                  className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => generarBonosPDF(datosPreviewBonos)}
+                  disabled={generandoBonos || datosPreviewBonos.length === 0}
+                  className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
+                    generandoBonos || datosPreviewBonos.length === 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white'
+                  }`}
+                >
+                  {generandoBonos ? (
+                    <>
+                      <FaSpinner className="animate-spin inline mr-2" />
+                      Generando PDF...
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload className="inline mr-2" />
+                      Generar PDF
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
