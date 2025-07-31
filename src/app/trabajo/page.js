@@ -24,7 +24,8 @@ export default function RegistroTrabajoPage() {
     horaFin: '',
     accionRealizada: '',
     montoAccion: 0,
-    observaciones: ''
+    observaciones: '',
+    tipoServicio: '' // arriendo, venta, inmobiliaria
   });
   
   // Estados para filtros
@@ -55,7 +56,8 @@ export default function RegistroTrabajoPage() {
         'Inspección soldaduras': 12000,
         'Montaje andamios': 16000,
         'Limpieza maquinaria': 10000,
-        'Bono por disposición': 20000
+        'Bono por disposición': 20000,
+        'Otros': 15000
 
       }
     },
@@ -70,7 +72,8 @@ export default function RegistroTrabajoPage() {
         'Pintura pistola': 18000,
         'Retoque áreas': 10000,
         'Lijado y pulido': 13000,
-        'Bono por disposición': 20000
+        'Bono por disposición': 20000,
+        'Otros': 15000
 
       }
     },
@@ -86,7 +89,8 @@ export default function RegistroTrabajoPage() {
         'Instalación luz': 14000,
         'Sitio': 17000,
         'Mantención': 10000,
-        'Bono por disposición': 20000
+        'Bono por disposición': 20000,
+        'Otros': 15000
       }
     }
   };
@@ -317,7 +321,8 @@ export default function RegistroTrabajoPage() {
       horaFin: '',
       accionRealizada: '',
       montoAccion: 0,
-      observaciones: ''
+      observaciones: '',
+      tipoServicio: ''
     });
   };
 
@@ -713,6 +718,11 @@ export default function RegistroTrabajoPage() {
                       
                       <div className="font-medium mb-2 text-gray-800 bg-white/60 px-3 py-2 rounded-lg">
                         {registro.accionRealizada}
+                        {registro.tipoServicio && (
+                          <span className="ml-2 text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                            {registro.tipoServicio}
+                          </span>
+                        )}
                       </div>
                       
                       {registro.observaciones && (
@@ -776,7 +786,7 @@ export default function RegistroTrabajoPage() {
                   <select
                     value={formData.trabajadorId}
                     onChange={onTrabajadorChange}
-                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
                   >
                     <option value="">Seleccionar trabajador</option>
                     {trabajadores.map(t => (
@@ -789,32 +799,32 @@ export default function RegistroTrabajoPage() {
                 
                 <div>
                   <label className="block font-semibold mb-2 text-gray-700">Fecha *</label>
-                  <input
-                    type="date"
-                    value={formData.fecha}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
-                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
-                  />
+                                      <input
+                      type="date"
+                      value={formData.fecha}
+                      onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                    />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold mb-2 text-gray-700">Hora Inicio *</label>
-                    <input
-                      type="time"
-                      value={formData.horaInicio}
-                      onChange={(e) => setFormData(prev => ({ ...prev, horaInicio: e.target.value }))}
-                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
-                    />
+                                          <input
+                        type="time"
+                        value={formData.horaInicio}
+                        onChange={(e) => setFormData(prev => ({ ...prev, horaInicio: e.target.value }))}
+                        className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                      />
                   </div>
                   <div>
                     <label className="block font-semibold mb-2 text-gray-700">Hora Fin *</label>
-                    <input
-                      type="time"
-                      value={formData.horaFin}
-                      onChange={(e) => setFormData(prev => ({ ...prev, horaFin: e.target.value }))}
-                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
-                    />
+                                          <input
+                        type="time"
+                        value={formData.horaFin}
+                        onChange={(e) => setFormData(prev => ({ ...prev, horaFin: e.target.value }))}
+                        className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                      />
                   </div>
                 </div>
 
@@ -838,7 +848,7 @@ export default function RegistroTrabajoPage() {
                     <select
                       value={formData.accionRealizada}
                       onChange={onAccionChange}
-                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
                     >
                       <option value="">Seleccionar acción</option>
                       {Object.entries(tiposTrabajo[formData.tipoTrabajo]?.acciones || {}).map(([accion, monto]) => (
@@ -853,24 +863,38 @@ export default function RegistroTrabajoPage() {
                 {formData.montoAccion > 0 && (
                   <div>
                     <label className="block font-semibold mb-2 text-gray-700">Monto por Hora</label>
-                    <input
-                      type="number"
-                      value={formData.montoAccion}
-                      onChange={(e) => setFormData(prev => ({ ...prev, montoAccion: Number(e.target.value) }))}
-                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
-                    />
+                                          <input
+                        type="number"
+                        value={formData.montoAccion}
+                        onChange={(e) => setFormData(prev => ({ ...prev, montoAccion: Number(e.target.value) }))}
+                        className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                      />
                   </div>
                 )}
                 
                 <div>
+                  <label className="block font-semibold mb-2 text-gray-700">Tipo de Servicio</label>
+                  <select
+                    value={formData.tipoServicio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tipoServicio: e.target.value }))}
+                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                  >
+                    <option value="">Seleccionar tipo de servicio</option>
+                    <option value="arriendo">Arriendo</option>
+                    <option value="venta">Venta</option>
+                    <option value="inmobiliaria">Inmobiliaria</option>
+                  </select>
+                </div>
+                
+                <div>
                   <label className="block font-semibold mb-2 text-gray-700">Observaciones</label>
-                  <textarea
-                    value={formData.observaciones}
-                    onChange={(e) => setFormData(prev => ({ ...prev, observaciones: e.target.value }))}
-                    rows={3}
-                    className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white"
-                    placeholder="Detalles adicionales del trabajo realizado..."
-                  />
+                                      <textarea
+                      value={formData.observaciones}
+                      onChange={(e) => setFormData(prev => ({ ...prev, observaciones: e.target.value }))}
+                      rows={3}
+                      className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+                      placeholder="Detalles adicionales del trabajo realizado..."
+                    />
                 </div>
                 
                 {formData.horaInicio && formData.horaFin && formData.montoAccion > 0 && !conflictoHorario && (
