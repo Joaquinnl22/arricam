@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import connectToDatabase from "@/lib/mongodb";
-import mongoose from "mongoose";
+import Item from "@/models/Item";
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -9,21 +9,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Definir el modelo si no existe
-if (!mongoose.models.Item) {
-  const ItemSchema = new mongoose.Schema({
-    tipo: { type: String, required: true },
-    title: { type: String, required: true },
-    descripcion: { type: String, required: true },
-    estado: { type: String, required: true },
-    cantidad: { type: Number, default: 1, required: true },
-    imagenes: [{ type: String }],
-  });
-
-  mongoose.model("Item", ItemSchema);
-}
-
-const Item = mongoose.models.Item;
 export async function PUT(req) {
   try {
     await connectToDatabase();

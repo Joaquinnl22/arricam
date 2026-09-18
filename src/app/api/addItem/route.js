@@ -1,8 +1,10 @@
 import { v2 as cloudinary } from "cloudinary";
 import connectToDatabase from "@/lib/mongodb";
-import mongoose from "mongoose";
 import webpush from "web-push";
+import Item from "@/models/Item";
 import Subscription from "@/models/Subscription";
+import { ESTADOS, ESTADOS_INICIALES } from "@/lib/estados";
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -27,8 +29,16 @@ export async function POST(req) {
       estado: form.get("estado"),
       cantidad: Number(form.get("cantidad")),
       arrendadoPor: form.get("arrendadoPor") || null,
-      accion: "agregado", 
+      accion: "agregado",
     };
+
+    // Un ítem nuevo no puede nacer vendido: la venta solo sale de stock disponible.
+    if (!ESTADOS_INICIALES.includes(data.estado)) {
+      return new Response(
+        JSON.stringify({ message: `Estado inicial inválido: "${data.estado}".` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const files = form.getAll("imagenes");
     data.imagenes = [];
@@ -50,24 +60,6 @@ export async function POST(req) {
       }
     }
 
-    delete mongoose.models.Item;
-    const ItemSchema = new mongoose.Schema(
-      {
-        tipo: String,
-        title: String,
-        descripcion: String,
-        estado: String,
-        cantidad: { type: Number, default: 1 },
-        imagen: { type: String, required: false },
-        arrendadoPor: { type: String, default: "NaN" },
-        accion: { type: String, default: "agregado" }
-      },
-      {
-        timestamps: true, // Esto agrega createdAt y updatedAt
-      }
-    );
-
-    const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
     const newItem = new Item(data);
     await newItem.save();
     // Evitar notificación si el título es "test"
@@ -75,7 +67,7 @@ export async function POST(req) {
       const subscriptions = await Subscription.find({});
       let estadoTexto = data.estado;
 
-      if (data.estado === "ocupado" && data.arrendadoPor) {
+      if (data.estado === ESTADOS.ARRIENDO && data.arrendadoPor) {
         estadoTexto += ` (arrendado por ${data.arrendadoPor})`;
       }
 

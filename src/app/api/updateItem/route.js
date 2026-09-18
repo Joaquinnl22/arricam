@@ -1,8 +1,13 @@
 import { v2 as cloudinary } from "cloudinary";
 import connectToDatabase from "@/lib/mongodb";
-import mongoose from "mongoose";
 import webpush from "web-push";
+import Item from "@/models/Item";
 import Subscription from "@/models/Subscription";
+import {
+  ESTADOS,
+  CAMPO_CONTRAPARTE,
+  puedeMoverse,
+} from "@/lib/estados";
 
 // Configuración de Cloudinary
 cloudinary.config({
@@ -18,28 +23,11 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-// Definir modelo de MongoDB si no existe
-if (!mongoose.models.Item) {
-  const ItemSchema = new mongoose.Schema(
-    {
-      tipo: { type: String, required: true },
-      title: { type: String, required: true },
-      descripcion: { type: String, required: true },
-      estado: { type: String, required: true },
-      cantidad: { type: Number, default: 1, required: true },
-      imagenes: [{ type: String }],
-      arrendadoPor: { type: String, default: null },
-      accion: { type: String, default: "actualizado" },
-    },
-    {
-      timestamps: true, // ✅ Agrega esto
-    }
-  );
-
-  mongoose.model("Item", ItemSchema);
-}
-
-const Item = mongoose.models.Item;
+const jsonResponse = (body, status) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 
 export async function PUT(req) {
   try {
@@ -52,6 +40,7 @@ export async function PUT(req) {
       nuevoEstado,
       cantidadNumerica,
       arrendadoPor = null,
+      vendidoA = null,
       imagenes = [];
 
     const contentType = req.headers.get("content-type") || "";
@@ -66,6 +55,7 @@ export async function PUT(req) {
         nuevoEstado,
         cantidad: cantidadNumerica,
         arrendadoPor,
+        vendidoA,
         imagenes,
       } = body);
     } else if (contentType.includes("multipart/form-data")) {
@@ -77,6 +67,7 @@ export async function PUT(req) {
       nuevoEstado = formData.get("nuevoEstado");
       cantidadNumerica = Number(formData.get("cantidad"));
       arrendadoPor = formData.get("arrendadoPor") || null;
+      vendidoA = formData.get("vendidoA") || null;
 
       const imagenesArchivos = formData.getAll("imagenes");
       for (const file of imagenesArchivos) {
@@ -96,13 +87,7 @@ export async function PUT(req) {
         }
       }
     } else {
-      return new Response(
-        JSON.stringify({ message: "Formato de solicitud no soportado." }),
-        {
-          status: 415,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({ message: "Formato de solicitud no soportado." }, 415);
     }
 
     if (
@@ -111,14 +96,45 @@ export async function PUT(req) {
       !descripcion ||
       !estado ||
       !nuevoEstado ||
-      isNaN(cantidadNumerica)
+      !Number.isInteger(cantidadNumerica) ||
+      cantidadNumerica < 1
     ) {
-      return new Response(
-        JSON.stringify({
+      return jsonResponse(
+        {
           message:
-            "Todos los campos son requeridos y 'cantidad' debe ser un número válido.",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+            "Todos los campos son requeridos y 'cantidad' debe ser un entero mayor a 0.",
+        },
+        400
+      );
+    }
+
+    // Regla de negocio: solo se puede vender stock disponible (y una venta no se revierte).
+    if (!puedeMoverse(estado, nuevoEstado)) {
+      return jsonResponse(
+        {
+          message:
+            nuevoEstado === ESTADOS.VENTA
+              ? "Solo se puede vender stock en estado 'disponible'."
+              : `No se puede mover un ítem de '${estado}' a '${nuevoEstado}'.`,
+        },
+        400
+      );
+    }
+
+    // Arriendo y venta requieren registrar a la contraparte.
+    const campoContraparte = CAMPO_CONTRAPARTE[nuevoEstado];
+    const contraparte = String(
+      (nuevoEstado === ESTADOS.VENTA ? vendidoA : arrendadoPor) ?? ""
+    ).trim();
+    if (campoContraparte && !contraparte) {
+      return jsonResponse(
+        {
+          message:
+            nuevoEstado === ESTADOS.VENTA
+              ? "Debes indicar a quién se vendió."
+              : "Debes indicar quién arrienda.",
+        },
+        400
       );
     }
 
@@ -130,34 +146,31 @@ export async function PUT(req) {
     });
 
     if (!currentItem) {
-      return new Response(
-        JSON.stringify({ message: "Ítem original no encontrado." }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ message: "Ítem original no encontrado." }, 404);
     }
 
     if (cantidadNumerica > currentItem.cantidad) {
-      return new Response(
-        JSON.stringify({
-          message: "Cantidad solicitada excede la cantidad disponible.",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+      return jsonResponse(
+        { message: "Cantidad solicitada excede la cantidad disponible." },
+        400
       );
     }
 
+    // Las ventas de distintos compradores se mantienen como registros separados.
     let targetItem = await Item.findOne({
       tipo,
       title,
       descripcion,
       estado: nuevoEstado,
+      ...(nuevoEstado === ESTADOS.VENTA ? { vendidoA: contraparte } : {}),
     });
 
     if (targetItem) {
       targetItem.cantidad += cantidadNumerica;
       targetItem.imagenes = [...new Set([...targetItem.imagenes, ...imagenes])];
 
-      if (nuevoEstado === "arriendo" && arrendadoPor) {
-        targetItem.arrendadoPor = arrendadoPor;
+      if (nuevoEstado === ESTADOS.ARRIENDO) {
+        targetItem.arrendadoPor = contraparte;
       }
 
       targetItem.accion = "actualizado";
@@ -171,7 +184,7 @@ export async function PUT(req) {
         cantidad: cantidadNumerica,
         imagenes,
         accion: "movido",
-        ...(nuevoEstado === "arriendo" && arrendadoPor ? { arrendadoPor } : {}),
+        ...(campoContraparte ? { [campoContraparte]: contraparte } : {}),
       });
       await targetItem.save();
     }
@@ -194,8 +207,10 @@ export async function PUT(req) {
         const subscriptions = await Subscription.find({});
 
         let estadoTexto = nuevoEstado;
-        if (nuevoEstado === "arriendo" && arrendadoPor) {
-          estadoTexto += ` (arrendado por ${arrendadoPor})`;
+        if (nuevoEstado === ESTADOS.ARRIENDO) {
+          estadoTexto += ` (arrendado por ${contraparte})`;
+        } else if (nuevoEstado === ESTADOS.VENTA) {
+          estadoTexto += ` (vendido a ${contraparte})`;
         }
 
         const notificationPayload = JSON.stringify({
@@ -219,18 +234,12 @@ export async function PUT(req) {
       }
     }
 
-    return new Response(
-      JSON.stringify({ message: "Ítem actualizado correctamente." }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ message: "Ítem actualizado correctamente." }, 200);
   } catch (error) {
     console.error("Error en la API:", error);
-    return new Response(
-      JSON.stringify({
-        message: "Error al actualizar el ítem",
-        error: error.message,
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+    return jsonResponse(
+      { message: "Error al actualizar el ítem", error: error.message },
+      500
     );
   }
 }
