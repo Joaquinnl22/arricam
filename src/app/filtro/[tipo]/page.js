@@ -1,6 +1,6 @@
 "use client";
 import React, { use } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaSpinner } from "react-icons/fa"; // Import loading icon
 import Navbar from "../../../components/Navbar/NavBar";
 import ItemCard from "../../../components/ItemCard/ItemCard";
@@ -8,16 +8,65 @@ import ModalAgregar from "../../../components/Modal/ModalAdd";
 import ModalEditar from "../../../components/Modal/ModalEdit";
 import ModalDel from "../../../components/Modal/ModaDel";
 import ModalBackup from "../../../components/Modal/ModalBackup";
+import { ESTADOS, transicionesDesde } from "@/lib/estados";
 
+// Una entrada por columna del tablero. Las clases de Tailwind van completas
+// (no interpoladas) para que el compilador las detecte.
+const COLUMNAS = [
+  {
+    estado: ESTADOS.DISPONIBLE,
+    titulo: "Disponible para arriendo",
+    etiqueta: "disponibles",
+    colorTitulo: "text-green-600",
+    colorBadge: "bg-green-100 text-green-700",
+    enStock: true,
+  },
+  {
+    estado: ESTADOS.MANTENCION,
+    titulo: "Mantención para arriendo",
+    etiqueta: "en mantención",
+    colorTitulo: "text-yellow-600",
+    colorBadge: "bg-yellow-100 text-yellow-700",
+    enStock: true,
+  },
+  {
+    estado: ESTADOS.ARRIENDO,
+    titulo: "Arrendados",
+    etiqueta: "arriendos",
+    colorTitulo: "text-red-600",
+    colorBadge: "bg-red-100 text-red-700",
+    enStock: true,
+    contraparte: { campo: "arrendadoPor", label: "Arrendado por:" },
+  },
+  {
+    // Lo vendido sale del stock, por eso no suma al "Stock total".
+    estado: ESTADOS.VENTA,
+    titulo: "Ventas",
+    etiqueta: "vendidos",
+    colorTitulo: "text-purple-600",
+    colorBadge: "bg-purple-100 text-purple-700",
+    enStock: false,
+    contraparte: { campo: "vendidoA", label: "Vendido a:" },
+  },
+];
+
+const normalize = (str) => {
+  if (!str) return ""; // Si str es null o undefined, retorna una cadena vacía
+  return str
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+};
+
+const capitalizeFirstLetter = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1);
+
+const calculateTotal = (items) =>
+  (items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
 export default function FiltroPorTipoPage({ params }) {
   const { tipo } = use(params);
   const [items, setItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState({
-    disponible: [],
-    mantencion: [],
-    arriendo: [],
-  });
 
   const [isAgregarOpen, setIsAgregarOpen] = useState(false);
   const [isEditarOpen, setIsEditarOpen] = useState(false);
@@ -25,16 +74,8 @@ export default function FiltroPorTipoPage({ params }) {
   const [loading, setLoading] = useState(false); // Add loading state
 
   const [editItem, setEditItem] = useState(null);
-    const [mostrarBackup, setMostrarBackup] = useState(false);
+  const [mostrarBackup, setMostrarBackup] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
-
-  const normalize = (str) => {
-    if (!str) return ""; // Si str es null o undefined, retorna una cadena vacía
-    return str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  };
 
   const decodedTipo = decodeURIComponent(tipo);
 
@@ -53,27 +94,30 @@ export default function FiltroPorTipoPage({ params }) {
     }
   };
 
-  const groupItemsByTipo = (items) => {
+  // Ítems del tipo actual, agrupados por estado (una clave por columna).
+  const filteredItems = useMemo(() => {
     const filteredByTipo = decodedTipo
       ? items.filter(
           (item) => normalize(item.tipo || "") === normalize(decodedTipo)
         )
       : items;
 
-    setFilteredItems({
-      disponible: filteredByTipo.filter((item) => item.estado === "disponible"),
-      mantencion: filteredByTipo.filter((item) => item.estado === "mantencion"),
-      arriendo: filteredByTipo.filter((item) => item.estado === "arriendo"),
-    });
-  };
+    return Object.fromEntries(
+      COLUMNAS.map(({ estado }) => [
+        estado,
+        filteredByTipo.filter((item) => item.estado === estado),
+      ])
+    );
+  }, [items, decodedTipo]);
+
+  const stockTotal = COLUMNAS.filter((col) => col.enStock).reduce(
+    (sum, { estado }) => sum + calculateTotal(filteredItems[estado]),
+    0
+  );
 
   useEffect(() => {
     fetchItems(); // Cargar ítems al montar el componente
   }, []);
-
-  useEffect(() => {
-    groupItemsByTipo(items); // Agrupar ítems cada vez que se actualicen
-  }, [items, decodedTipo]);
 
   const handleOpenAgregar = () => setIsAgregarOpen(true);
   const handleCloseAgregar = () => setIsAgregarOpen(false);
@@ -106,7 +150,7 @@ export default function FiltroPorTipoPage({ params }) {
     }
   };
 
-  const renderItems = (itemsArray, showArrendadoPor = false) => {
+  const renderItems = (itemsArray, contraparte) => {
     if (!itemsArray || itemsArray.length === 0) {
       return <p className="text-center text-gray-500">No hay ítems.</p>;
     }
@@ -114,34 +158,34 @@ export default function FiltroPorTipoPage({ params }) {
       <div key={item._id} className="bg-gray-50 p-4 rounded-lg shadow">
         <ItemCard
           item={item}
-          onEdit={handleOpenEditar}
+          // Un ítem sin estados destino (p. ej. ya vendido) no se puede editar.
+          onEdit={
+            transicionesDesde(item.estado).length > 0
+              ? handleOpenEditar
+              : undefined
+          }
           onDelete={handleOpenDelete}
         />
-        {showArrendadoPor && (
+        {contraparte && (
           <p className="text-sm text-gray-600 mt-2">
-            <strong>Arrendado por:</strong> {item.arrendadoPor || "NaN"}
+            <strong>{contraparte.label}</strong>{" "}
+            {item[contraparte.campo] || "NaN"}
           </p>
         )}
       </div>
     ));
   };
 
-  const capitalizeFirstLetter = (string) =>
-    string.charAt(0).toUpperCase() + string.slice(1);
-
-  const calculateTotal = (items) =>
-    (items || []).reduce((sum, item) => sum + (item.cantidad || 0), 0);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-4 sm:p-6">
-          <Navbar
-            onAddClick={() => setIsAgregarOpen(true)}
-            onBackupClick={() => setMostrarBackup(true)}
-          />
-                 <ModalBackup
-                      isOpen={mostrarBackup}
-                      onClose={() => setMostrarBackup(false)}
-                    />
+      <Navbar
+        onAddClick={() => setIsAgregarOpen(true)}
+        onBackupClick={() => setMostrarBackup(true)}
+      />
+      <ModalBackup
+        isOpen={mostrarBackup}
+        onClose={() => setMostrarBackup(false)}
+      />
       <ModalAgregar
         isOpen={isAgregarOpen}
         onClose={handleCloseAgregar}
@@ -156,7 +200,6 @@ export default function FiltroPorTipoPage({ params }) {
             if (!response.ok) throw new Error("Failed to add item");
 
             await fetchItems(); // Refresca los ítems después de agregar
-            await notifyUser("Item agregado", "Un nuevo container fue añadido al sistema.");
             handleCloseAgregar();
           } catch (error) {
             console.error(error);
@@ -205,56 +248,34 @@ export default function FiltroPorTipoPage({ params }) {
             </h1>
             <div className="absolute right-0 top-0 text-blue-600 text-xl sm:text-2xl font-bold">
               <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg shadow">
-                Stock total:{" "}
-                {calculateTotal(filteredItems.disponible) +
-                  calculateTotal(filteredItems.mantencion) +
-                  calculateTotal(filteredItems.arriendo)}
+                Stock total: {stockTotal}
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-green-600">
-                  Disponible para arriendo
-                </h2>
-                <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">
-                  {calculateTotal(filteredItems.disponible)} disponibles
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderItems(filteredItems.disponible)}
-              </div>
-            </div>
-
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-yellow-600">
-                  Mantención para arriendo
-                </h2>
-                <span className="bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full">
-                  {calculateTotal(filteredItems.mantencion)} en mantención
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderItems(filteredItems.mantencion)}
-              </div>
-            </div>
-
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-red-600">
-                  Arrendados
-                </h2>
-                <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">
-                  {calculateTotal(filteredItems.arriendo)} arriendos
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {renderItems(filteredItems.arriendo, true)}
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {COLUMNAS.map(
+              ({ estado, titulo, etiqueta, colorTitulo, colorBadge, contraparte }) => (
+                <div
+                  key={estado}
+                  className="bg-white p-4 sm:p-6 rounded-lg shadow-lg"
+                >
+                  <div className="flex justify-between items-center mb-4 gap-2">
+                    <h2 className={`text-lg sm:text-xl font-semibold ${colorTitulo}`}>
+                      {titulo}
+                    </h2>
+                    <span
+                      className={`text-sm px-3 py-1 rounded-full whitespace-nowrap ${colorBadge}`}
+                    >
+                      {calculateTotal(filteredItems[estado])} {etiqueta}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
+                    {renderItems(filteredItems[estado], contraparte)}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         </>
       )}

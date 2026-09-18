@@ -1,6 +1,19 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { CAMPO_CONTRAPARTE, transicionesDesde } from "@/lib/estados";
+
+// Etiqueta y mensaje de error del campo que identifica a la contraparte de cada estado.
+const CONTRAPARTE = {
+  arrendadoPor: {
+    label: "Arrendado por:",
+    error: "Debes ingresar el nombre de la persona que arrienda.",
+  },
+  vendidoA: {
+    label: "Vendido a:",
+    error: "Debes ingresar el nombre del comprador.",
+  },
+};
 
 const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -11,7 +24,8 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
     nuevoEstado: "",
     cantidad: 1,
     imagenes: [],
-    arrendadoPor: "", // Nuevo campo
+    arrendadoPor: "",
+    vendidoA: "",
   });
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -28,7 +42,9 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
         cantidad: 1,
         imagenes: item.imagenes || [],
         arrendadoPor: "", // Inicializamos vacío
+        vendidoA: "",
       });
+      setError("");
     }
   }, [item]);
 
@@ -43,6 +59,11 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       prevIndex === 0 ? formData.imagenes.length - 1 : prevIndex - 1
     );
   };
+
+  // Estados a los que se puede mover este ítem (p. ej. "venta" solo desde "disponible").
+  const estadosDestino = transicionesDesde(formData.estado);
+  // Campo extra a pedir según el nuevo estado (arrendadoPor / vendidoA), si aplica.
+  const campoContraparte = CAMPO_CONTRAPARTE[formData.nuevoEstado];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,8 +80,8 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
       return;
     }
 
-    if (formData.nuevoEstado === "arriendo" && !formData.arrendadoPor.trim()) {
-      setError("Debes ingresar el nombre de la persona que arrienda.");
+    if (campoContraparte && !formData[campoContraparte].trim()) {
+      setError(CONTRAPARTE[campoContraparte].error);
       return;
     }
 
@@ -118,46 +139,46 @@ const ModalEditar = ({ isOpen, item, onClose, onSave }) => {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Nuevo Estado:</label>
             <div className="flex flex-wrap gap-4 mt-2">
-              {["disponible", "arriendo", "mantencion"]
-                .filter((estado) => estado !== formData.estado)
-                .map((estado) => (
-                  <button
-                    key={estado}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prevData) => ({
-                        ...prevData,
-                        nuevoEstado: estado,
-                        arrendadoPor: estado === "arriendo" ? "" : prevData.arrendadoPor,
-                      }))
-                    }
-                    className={`flex items-center px-4 py-2 border rounded-lg ${
-                      formData.nuevoEstado === estado
-                        ? "bg-blue-100 border-blue-500"
-                        : "bg-gray-100 border-gray-300"
-                    }`}
-                  >
-                    <span className="ml-2 capitalize">{estado}</span>
-                  </button>
-                ))}
+              {estadosDestino.map((estado) => (
+                <button
+                  key={estado}
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setFormData((prevData) => ({
+                      ...prevData,
+                      nuevoEstado: estado,
+                      arrendadoPor: "",
+                      vendidoA: "",
+                    }));
+                  }}
+                  className={`flex items-center px-4 py-2 border rounded-lg ${
+                    formData.nuevoEstado === estado
+                      ? "bg-blue-100 border-blue-500"
+                      : "bg-gray-100 border-gray-300"
+                  }`}
+                >
+                  <span className="ml-2 capitalize">{estado}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Campo de arrendadoPor (solo si el nuevo estado es "arriendo") */}
-          {formData.nuevoEstado === "arriendo" && (
+          {/* Contraparte: "Arrendado por" (arriendo) o "Vendido a" (venta) */}
+          {campoContraparte && (
             <div className="mb-4">
-              <label htmlFor="arrendadoPor" className="block text-sm font-medium text-gray-700">
-                Arrendado por:
+              <label htmlFor={campoContraparte} className="block text-sm font-medium text-gray-700">
+                {CONTRAPARTE[campoContraparte].label}
               </label>
               <input
                 type="text"
-                id="arrendadoPor"
-                name="arrendadoPor"
-                value={formData.arrendadoPor}
+                id={campoContraparte}
+                name={campoContraparte}
+                value={formData[campoContraparte]}
                 onChange={(e) =>
                   setFormData((prevData) => ({
                     ...prevData,
-                    arrendadoPor: e.target.value,
+                    [campoContraparte]: e.target.value,
                   }))
                 }
                 className="w-full p-2 border border-gray-300 rounded text-gray-800"

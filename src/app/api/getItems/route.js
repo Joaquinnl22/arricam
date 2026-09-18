@@ -1,30 +1,18 @@
 import connectToDatabase from "../../../lib/mongodb";
-import mongoose from "mongoose";
+import Item from "@/models/Item";
 
 export async function GET(req) {
   try {
     await connectToDatabase();
 
-    // Definir el esquema y el modelo de los items
-    const ItemSchema = new mongoose.Schema({
-      tipo: String,
-      title: String,
-      descripcion: String,
-      estado: String,
-      cantidad: { type: Number, default: 1 },
-      imagen: { type: String, required: false },
-      arrendadoPor: { type: String, default: "NaN" }, // Nuevo campo con valor por defecto
-    });
-
-    const Item = mongoose.models.Item || mongoose.model("Item", ItemSchema);
-
     // Obtener todos los items de la base de datos
     const items = await Item.find();
 
-    // Asegurar que todos los ítems tengan "arrendadoPor" y poner "NaN" si no lo tienen
+    // Asegurar que todos los ítems tengan "arrendadoPor" y "vendidoA" (poner "NaN" si no lo tienen)
     const updatedItems = items.map((item) => ({
       ...item.toObject(),
       arrendadoPor: item.arrendadoPor || "NaN",
+      vendidoA: item.vendidoA || "NaN",
     }));
 
     // Retornar los items

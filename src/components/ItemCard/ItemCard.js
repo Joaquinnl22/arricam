@@ -1,11 +1,19 @@
 "use client";
 
+const COLOR_ESTADO = {
+  disponible: "text-green-600",
+  arriendo: "text-red-600",
+  venta: "text-purple-600",
+};
+
 export default function ItemCard({ item, onEdit, onDelete }) {
   const { title, descripcion, estado, cantidad, imagenes } = item;
 
   return (
     <div
-      className="bg-white p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-200 flex flex-col"
+      className={`bg-white p-4 sm:p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200 flex flex-col ${
+        onEdit ? "cursor-pointer" : ""
+      }`}
       onClick={() => onEdit && onEdit(item)} // Call onEdit
     >
       {/* Imagen o marcador de "Sin imagen" */}
@@ -31,11 +39,7 @@ export default function ItemCard({ item, onEdit, onDelete }) {
 
       <span
         className={`text-sm font-medium mb-2 ${
-          estado === "disponible"
-            ? "text-green-600"
-            : estado === "arriendo"
-            ? "text-red-600"
-            : "text-orange-600"
+          COLOR_ESTADO[estado] || "text-orange-600"
         }`}
       >
         {estado}

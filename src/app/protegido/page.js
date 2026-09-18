@@ -17,6 +17,14 @@ import {
 import { ImOffice } from "react-icons/im";
 import { PiShippingContainerFill } from "react-icons/pi";
 import { toast } from "react-toastify";
+import { ESTADOS } from "@/lib/estados";
+
+// Columnas de la tabla de módulos: nombre (más ancha) + disponible, mantención,
+// arrendados, stock total y ventas. Las clases van completas para que Tailwind las detecte.
+const GRID_MODULOS =
+  "grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]";
+const GRID_MODULOS_SM =
+  "sm:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]";
 
 async function notifyUser(title, body) {
   if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -260,23 +268,13 @@ export default function Home() {
     const availableCount = calculateStateCounts(items, "disponible");
     const maintenanceCount = calculateStateCounts(items, "mantencion");
     const occupiedCount = calculateStateCounts(items, "arriendo");
-
-    let formattedPreviousDate = "";
-    if (previousSummary?.date) {
-      const [year, month, day] = previousSummary.date.split("-");
-      const fixedDate = new Date(year, month - 1, day);
-      formattedPreviousDate = fixedDate.toLocaleDateString("es-ES", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
+    // Lo vendido ya no es stock: se muestra aparte y no suma al total.
+    const soldCount = calculateStateCounts(items, ESTADOS.VENTA);
 
     return (
       <div key={type} className="">
         <div className="bg-white rounded-xl shadow-md p-3">
-          <div className="grid grid-cols-5 gap-1 sm:gap-2">
+          <div className={`grid ${GRID_MODULOS} gap-1 sm:gap-2`}>
             <div className="flex items-center justify-center mb-2 flex-col sm:flex-row">
               <Icon className="h-8 w-8 text-gray-700 mb-1 sm:mb-0 sm:mr-1" />
               <h3 className="text-sm sm:text-lg font-bold text-gray-800 sm:ml-2">
@@ -284,17 +282,20 @@ export default function Home() {
               </h3>
             </div>
             {/* Números destacados */}
-            <div className="flex items-center justify-center bg-green-100 rounded-lg p-1 shadow text-green-600 font-extrabold text-3xl sm:text-4xl text-center border-2 border-green-600">
+            <div className="flex items-center justify-center bg-green-100 rounded-lg p-1 shadow text-green-600 font-extrabold text-2xl sm:text-4xl text-center border-2 border-green-600">
               {availableCount}
             </div>
-            <div className="flex items-center justify-center bg-yellow-100 rounded-lg p-1 shadow text-yellow-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-yellow-500">
+            <div className="flex items-center justify-center bg-yellow-100 rounded-lg p-1 shadow text-yellow-500 font-extrabold text-2xl sm:text-4xl text-center border-2 border-yellow-500">
               {maintenanceCount}
             </div>
-            <div className="flex items-center justify-center bg-red-100 rounded-lg p-1 shadow text-red-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-red-500">
+            <div className="flex items-center justify-center bg-red-100 rounded-lg p-1 shadow text-red-500 font-extrabold text-2xl sm:text-4xl text-center border-2 border-red-500">
               {occupiedCount}
             </div>
-            <div className="flex items-center justify-center bg-blue-100 rounded-lg p-1 shadow text-blue-500 font-extrabold text-3xl sm:text-4xl text-center border-2 border-blue-500">
+            <div className="flex items-center justify-center bg-blue-100 rounded-lg p-1 shadow text-blue-500 font-extrabold text-2xl sm:text-4xl text-center border-2 border-blue-500">
               {availableCount + maintenanceCount + occupiedCount}
+            </div>
+            <div className="flex items-center justify-center bg-purple-100 rounded-lg p-1 shadow text-purple-600 font-extrabold text-2xl sm:text-4xl text-center border-2 border-purple-600">
+              {soldCount}
             </div>
           </div>
         </div>
@@ -313,6 +314,7 @@ export default function Home() {
   const globalAvailable = calculateGlobalCount("disponible");
   const globalOccupied = calculateGlobalCount("arriendo");
   const globalMaintenance = calculateGlobalCount("mantencion");
+  const globalSold = calculateGlobalCount(ESTADOS.VENTA);
 
   const globalStock = globalAvailable + globalOccupied + globalMaintenance;
   useEffect(() => {
@@ -595,7 +597,7 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
               Resumen Global
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full text-center">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-600">
                   Disponible para arriendo
@@ -628,10 +630,18 @@ export default function Home() {
                   {globalStock}
                 </div>
               </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-600">
+                  Ventas
+                </h3>
+                <div className="text-2xl font-extrabold text-purple-600">
+                  {globalSold}
+                </div>
+              </div>
             </div>
           </div>
           <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center text-center">
+            <div className={`grid grid-cols-1 ${GRID_MODULOS_SM} gap-4 items-center text-center`}>
               <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                 Modulos
               </h3>
@@ -646,6 +656,9 @@ export default function Home() {
               </h3>
               <h3 className="text-lg sm:text-xl font-bold text-blue-500">
                 Stock Total
+              </h3>
+              <h3 className="text-lg sm:text-xl font-bold text-purple-600">
+                Ventas
               </h3>
             </div>
           </div>

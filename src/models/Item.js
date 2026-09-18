@@ -1,14 +1,18 @@
 import mongoose from 'mongoose';
 
+// Modelo único de Item. Todas las rutas deben importarlo desde aquí:
+// definir el schema en cada ruta hace que gane el primero en registrarse
+// y que los campos nuevos se pierdan silenciosamente (strict mode).
 const ItemSchema = new mongoose.Schema({
-  tipo: String,
-  title: String,
-  descripcion: String,
-  estado: String,
-  cantidad: { type: Number, default: 1 },
-  imagen: { type: String, required: false },
+  tipo: { type: String, required: true },
+  title: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  estado: { type: String, required: true },
+  cantidad: { type: Number, default: 1, required: true },
+  imagenes: [{ type: String }],
   arrendadoPor: { type: String, default: "NaN" },
-  accion: { type: String, enum: ["agregado", "modificado"], required: true }, 
+  vendidoA: { type: String, default: "NaN" },
+  accion: { type: String, default: "agregado" },
 }, {
   timestamps: true
 });
